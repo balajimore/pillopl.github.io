@@ -1,13 +1,9 @@
 ---
 layout: post
-title: Gradle Build Phases
+title: Why injecting by constructor should be preffered?
 ---
 
-Always hungry for changes, some time ago 4F company moved from Maven to Gradle.
-Most of the migration work went relatively smoothly.
-Surprisingly though, not every developer was eager to sacrifice his precious time on something as trival as build tools and
-with rapid googling for example based knowledge some mistakes were made.  
-One of them can serve to decribe one of Gradle's fundamental aspects - **Build Phases**.  
+Seeing the famous <a href="http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/annotations/VisibleForTesting.html">@VisibleForTesting</a> guava's annotation for the first time made me thinking. Without looking at the implementation I was pretty sure it is magical piece of code which silently makes our properties visibile only in tests without breaking carefully (?) created encapsulation. Later on, I decided to look at the implementation and javadocs. Here goes the latter one:
 
 #### Problem
 
