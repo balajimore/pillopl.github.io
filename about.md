@@ -4,14 +4,9 @@ title: About
 permalink: /about/
 ---
 
-Dawid Kublik  
-Senior Java Developer @ 4FinanceIT  
-more - ToBeDescribed  
-
-### More Information
-
-Still To Be Found
+Jakub Pilimon
+Java Developer @ 4FinanceIT  
 
 ### Contact me
 
-[dkublik@gmail.com](mailto:dkublik@gmail.com)
+[jakub.pilimon@gmail.com](mailto:jakub.pilimon@gmail.com)
