@@ -32,7 +32,7 @@ footer-links:
 
 # Enter your Disqus shortname (not your username) to enable commenting on posts
 # You can find your shortname on the Settings page of your Disqus account
-disqus:
+disqus: jakubpilimon
 
 # Enter your Google Analytics web tracking code (e.g. UA-2110908-2) to activate tracking
 google_analytics:
@@ -73,10 +73,3 @@ exclude:
     - LICENSE
     - README.md
 
-comments: 
-    provider: facebook
-    facebook:
-    appid: 1435753973393877
-    num_posts: 5
-    width: 580
-    colorscheme: light
