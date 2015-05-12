@@ -76,7 +76,7 @@ exclude:
 comments: 
     provider: facebook
     facebook:
-    appid: 123
+    appid: 1435753973393877
     num_posts: 5
     width: 580
     colorscheme: light

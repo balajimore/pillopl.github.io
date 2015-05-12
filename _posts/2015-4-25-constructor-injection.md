@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Why injecting by constructor should be preffered?
-
+comments: true
 ---
 <p style="text-align:justify;">
 Seeing the famous <a href="http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/annotations/VisibleForTesting.html">@VisibleForTesting</a> guava's annotation for the first time made me thinking. Without looking at the implementation I was pretty sure it is magical piece of code which silently makes our properties visibile only in tests without breaking carefully (?) created encapsulation. Later on, I decided to look at the implementation and javadocs. Here goes the latter one:
