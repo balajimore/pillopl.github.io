@@ -73,7 +73,7 @@ exclude:
     - LICENSE
     - README.md
 	
-comments:
+comments: 
     provider: facebook
     facebook:
     appid: 123
