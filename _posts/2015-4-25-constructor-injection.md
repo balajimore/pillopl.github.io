@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Why injecting by constructor should be preffered?
+title: @VisibleForLazyAss
 comments: true
 ---
 <p style="text-align:justify;">
