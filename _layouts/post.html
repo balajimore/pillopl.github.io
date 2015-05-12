@@ -13,5 +13,9 @@ layout: default
     Written on {{ page.date | date: "%B %e, %Y" }}
   </div>
 
-  {% include disqus.html %}
+  {{ "{% if page.comments " }}%} 
+<hr/>
+<h2>Comments</h2>
+<div class="fb-comments" data-href="{{ "{{ site.url " }}}}{{ "{{ page.url " }}}}" data-num-posts="4" data-width="706"></div>
+{{ "{% endif"}}%}
 </article>
