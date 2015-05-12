@@ -73,10 +73,7 @@ exclude:
     - LICENSE
     - README.md
 
-comments: 
-    provider: facebook
-    facebook:
-    appid: 123
-    num_posts: 5
-    width: 580
-    colorscheme: light
+comments :
+    provider : disqus
+    disqus :
+      short_name : pillo
