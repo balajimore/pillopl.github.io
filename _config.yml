@@ -73,10 +73,10 @@ exclude:
     - LICENSE
     - README.md
 	
-comments :
-  provider : facebook
-  facebook :
-    appid : 123
+comments:
+    provider: facebook
+    facebook:
+    appid: 123
     num_posts: 5
     width: 580
     colorscheme: light
