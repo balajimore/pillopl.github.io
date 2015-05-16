@@ -11,6 +11,11 @@ description: Software Developer
 # URL of your avatar or profile pic (you could use your GitHub profile pic)
 avatar: http://thefeed.com.au/wp-content/uploads/2013/11/brian_griffin_11.jpg
 
+
+analytics :
+  provider : google
+  google : 
+      tracking_id : 'UA-63049788-1'
 #
 # Flags below are optional
 #
