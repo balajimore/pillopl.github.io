@@ -6,6 +6,7 @@ comments: true
 
 <p style="text-align:justify;">
 Lately I several times came across Spock tests, which conceptually looked as follows:
+</p>
 
 ```java
     static final BigDecimal ANY_AMOUNT = new BigDecimal("100.00")
@@ -27,4 +28,4 @@ Lately I several times came across Spock tests, which conceptually looked as fol
             actualPayment == payment
     }
 ```
-</p>
+
