@@ -5,7 +5,8 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Lately I several times came across Spock tests, which conceptually looked as follows:</p>
+Lately I several times came across Spock tests, which conceptually looked as follows:
+</p>
 
 ```groovy
     static final BigDecimal ANY_AMOUNT = new BigDecimal("100.00")
