@@ -9,7 +9,7 @@ Several times lately I came across Spock tests, which conceptually looked as fol
 </p>
 
 ```groovy
-    static final BigDecimal ANY_AMOUNT = new BigDecimal("100.00")
+    private static final BigDecimal ANY_AMOUNT = new BigDecimal("100.00")
     
     Payment payment = aSamplePayment()
     Client client = aSampleClient()
@@ -51,7 +51,7 @@ Consider following implementation under test:
 ```
 
 <p style="text-align:justify;">
-What it does is creating new payment and saving it in some kind of storage. Actually, the paymentRepository.save() method could return stored payment, so that we could get rid of last line. Such design can be explained like the following "to something with the payment, return it, do something else, and return it". Two actions are being done by two collaborating services. Actually we can cut it to "do something <i>andThen</i> do something else". Rings a bell? It is just function composition and you can read why dependency injection in most cases is just function composition <a href="http://www.nurkiewicz.com/2015/08/dependency-injection-syntax-sugar-over.html">here</a>. What we care about is the result of function composition, which is being done inside one method. We don't care about partial steps and about their implementation. We are interested in the result, to be more precise we check <b>expected state</b>.
+What it does is creating new payment and saving it in some kind of storage. Actually, the paymentRepository.save() method could return stored payment, so that we could get rid of last line. Such design can be explained like the following "do something with the payment, return it, do something else, and return it". Two actions are being done by two collaborating services. Actually we can cut it to "do something <i>andThen</i> do something else". Rings a bell? It is just function composition and you can read why dependency injection in most cases is just function composition <a href="http://www.nurkiewicz.com/2015/08/dependency-injection-syntax-sugar-over.html">here</a>. What we care about is the result of function composition, which is being done inside one method. We don't care about partial steps and about their implementation. We are interested in the result, to be more precise we check <b>expected state</b>.
 </p>
 
 <p style="text-align:justify;">
