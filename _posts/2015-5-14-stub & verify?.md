@@ -19,7 +19,6 @@ Lately I several times came across Spock tests, which conceptually looked as fol
     @Subject
     Payments payments = new Payments(paymentCreator, repository)
 
-
     def "should create outgoing payment for loan"() {
         when:
             Payment actualPayment = payments.saveOutgoingFor(client, ANY_AMOUNT)
@@ -27,4 +26,5 @@ Lately I several times came across Spock tests, which conceptually looked as fol
             1 * paymentCreator.createOutgoing(client, ANY_AMOUNT) >> payment
             actualPayment == payment
     }
+```
 </p>
