@@ -5,10 +5,9 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Lately I several times came across Spock tests, which conceptually looked as follows:
-</p>
+Lately I several times came across Spock tests, which conceptually looked as follows:</p>
 
-```java
+```groovy
     static final BigDecimal ANY_AMOUNT = new BigDecimal("100.00")
     
     Payment payment = aSamplePayment()
@@ -28,4 +27,7 @@ Lately I several times came across Spock tests, which conceptually looked as fol
             actualPayment == payment
     }
 ```
+<p style="text-align:justify;">
+Spock allows you to stub and verify collaborator at once.<a href="https://spockframework.github.io/spock/docs/1.0/interaction_based_testing.html"> See section 'Combining Mocking and Stubbing'</a>
+</p>
 
