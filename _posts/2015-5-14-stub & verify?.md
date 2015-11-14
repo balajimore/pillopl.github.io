@@ -8,7 +8,7 @@ comments: true
 Lately I several times came across Spock tests, which conceptually looked as follows:
 </p>
 
-```java
+```groovy
     static final BigDecimal ANY_AMOUNT = new BigDecimal("100.00")
     
     Payment payment = aSamplePayment()
