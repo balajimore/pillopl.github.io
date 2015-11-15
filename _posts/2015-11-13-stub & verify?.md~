@@ -2,6 +2,7 @@
 layout: post
 title: Stub & Verify?
 comments: true
+category: norss
 ---
 
 <p style="text-align:justify;">
