@@ -72,11 +72,8 @@ You want your tests to fail for one reason. That is one of the most ground rules
 def "should create outgoing payment for loan"() {
         given:
             paymentCreator.createOutgoing(client, ANY_AMOUNT) >> payment
-        when:
-            Payment actualPayment = payments.saveOutgoingFor(client, ANY_AMOUNT)
-        then:
-            1 * repository.save(payment)
-            actualPayment == payment
+        expect:
+            payments.saveOutgoingFor(client, ANY_AMOUNT) == payment
     }
 
     def "should store the payment"() {
