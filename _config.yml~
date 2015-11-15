@@ -9,7 +9,7 @@ name: pillo
 description: Software Developer
 
 # URL of your avatar or profile pic (you could use your GitHub profile pic)
-avatar: images/brian.jpg
+avatar: https://pillopl.github.io/images/brian.jpg
 
 
 analytics :
