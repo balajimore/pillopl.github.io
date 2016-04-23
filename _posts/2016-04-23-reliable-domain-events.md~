@@ -6,7 +6,7 @@ category: norss
 ---
 
 <p style="text-align:justify;">
-We already know that domain events are a great tool to integrate different parts of your system (so called bounded contexts) and decouple them. Instead of directly calling outside component, we can notify our infrastructure, which in turns informs interested parties about what has just occured. This another form of <b>Inversion of Control</b> helps us to achieve our goal. Consider following piece of code:  
+We already know that domain events are a great tool to integrate different part of your system (so called bounded contexts) and decouple them. Instead of directly calling outside component, we can notify our infrastructure, which in turns informs interested parties about what has just occured. This another form of <b>Inversion of Control</b> helps us to achieve our goal. Consider following piece of code:  
 </p>
 
 ```java
@@ -17,7 +17,7 @@ We already know that domain events are a great tool to integrate different parts
         @Transactional
         public void register(LocalDateTime at, RegisteredBy by) {
             markRegistered();
-            markSuspiciousIfAtNight(at);
+	    markSuspiciousIfAtNight(at);
             DomainEventsPublisher.publish(new UserRegistered(this.id(), at));
         }
 
@@ -26,7 +26,7 @@ We already know that domain events are a great tool to integrate different parts
     public class UserRegistered implements DomainEvent {
 
         private final UserRegistered userId;
-        private final LocalDateTime at;
+	private final LocalDateTime at;
 
         //getters, constructor
 
@@ -34,7 +34,7 @@ We already know that domain events are a great tool to integrate different parts
 
     class DomainEventsPublisher {
 
-        //...
+	//...
 
         private final Register handlersRegistry;
 
@@ -66,34 +66,35 @@ This cleary shows tat those concepts should be unrelated. One may come with an i
 ```java
     class DomainEventsPublisher {
 
-        //...
+            //...
 
-        public static void publish(DomainEvent event) {
-            handlersRegistry
-                .getHandlers(event.getClass())
-                .forEach(handler -> handleAsynchronously(event, handlers));
-        }
+	    public static void publish(DomainEvent event) {
+		handlersRegistry
+		        .getHandlers(event.getClass())
+		        .forEach(handler -> handleAsynchronously(event, handlers));
+	    }
 
-        private static void handleAsynchronously(DomainEvent event, DomainEventHandler handler) {
-            if (TransactionSynchronizationManager.isActualTransactionActive()) {
-                processAfterCommit(event, handler);
-            } else {
-                processNow(event, handler);
-            }
-        }
+	    private static void handleAsynchronously(DomainEvent event, DomainEventHandler handler) {
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+		    processAfterCommit(event, handler);
+		} else {
+		    processNow(event, handler);
+		}
 
-        private static void processNow(final DomainEvent event, DomainEventHandler handler) {
-            handler.handle(event);
-        }
+	    }
 
-        private static void processAfterCommit(final DomainEvent event, DomainEventHandler handler) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    handler.handle(event);
-                }
-            });
-        }
+	    private static void processNow(final DomainEvent event, DomainEventHandler handler) {
+		handler.handle(event);
+	    }
+
+	    private static void processAfterCommit(final DomainEvent event, DomainEventHandler handler) {
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+		    @Override
+		    public void afterCommit() {
+		        handler.handle(event);
+		    }
+		});
+	    }
    }
 
 ```  
@@ -192,18 +193,18 @@ and it would be call in <i>DomainEventProcessor</i> in the same transaction (so 
 
  class DomainEventsPublisher {
 
-    //...
+	//...
 
-    private final Register handlersRegistry;
-    private final EventStore eventStore;
+        private final Register handlersRegistry;
+	private final EventStore eventStore;
 
-    public static void publish(DomainEvent event) {
-        handlersRegistry
-            .getHandlers(event.getClass())
-            .forEach(handler -> handler.handle(event));
-        eventStore.store(event);
+        public static void publish(DomainEvent event) {
+            handlersRegistry
+                .getHandlers(event.getClass())
+                .forEach(handler -> handler.handle(event));
+	    eventStore.store(event);
+        }
     }
-}
 
 ```
 
