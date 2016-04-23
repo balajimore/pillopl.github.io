@@ -57,15 +57,18 @@ We already know that domain events are a great tool to integrate different parts
 ```  
 
 <p style="text-align:justify;">
-There is a big problem with this simple <b>Observer</b> pattern in above example. Namely, everything happens in the same database transaction, which has started at the time of calling <i>register</i> method. This has several implications. First of all, we did not decouple user registration from e-mail sending and we just have mentioned this what domain events are for. If our mail server is down, registration fails. Why would our user care about an email? He correctly filled registration form and does not even know there is an email coming. 
-
+There is a big problem with this simple <b>Observer</b> pattern in above example. Namely, everything happens in the same database transaction, which has started at the time of calling <i>register</i> method. This has several implications. First of all, we did not decouple user registration from e-mail sending and we just have mentioned this is what domain events are for. If our mail server is down, registration fails. Why would our user care about an email? He correctly filled registration form and does not even know there is an email coming. 
+</p>
+<p style="text-align:justify;">
 From the <b>use case</b> point of view, sending an email should not imply successful invocation. Secondly, even though it looks like the code deals only with users (it registers and marks as suspicious when needed), it modifies another aggregate - communications (communication would be probably modeled as a Generic Subdomain, but to simplify things consider it as another bounded context). The rule of thumb says that we should not modify several aggregates in one transaction, because these concepts should not be so directly related. Sending an email (or any other action done as a consequence of registering user) may take a lot of time, do I/O calls, etc. 
-
-But things get worse. Consider that everything was fine wit our mail server, we want to save user to database and something fails and transaction rollbacks. Now we have a big problem, because confused user got error page as a response, but seconds later successful email with welcoming greetings.
 </p>
 
 <p style="text-align:justify;">
-This clearly shows that those concepts should be unrelated. One may come with an idea to fire all handlers asynchronously, but that solves only one issue: we could register users when we cannot send emails. We need something better. Fortunately, we can fire our emails just after transaction commit. Thus, we are sure everything was fine during registration and without doubts we can send the welcoming message. Spring gives us possibility to do that in a few lines of code with <a href="http://docs.spring.io/spring/docs/3.0.6.RELEASE_to_3.1.0.BUILD-SNAPSHOT/3.0.6.RELEASE/org/springframework/transaction/support/TransactionSynchronizationManager.html" TransactionSynchronizationManager</a>:
+But things get worse. Consider situation when everything was fine with our mail server, we want to save user to database and something fails and transaction rollbacks. Now we have a big problem, because confused user got error page as a response, but seconds later successful email with registration greetings.
+</p>
+
+<p style="text-align:justify;">
+This clearly shows that those concepts should be unrelated. One may come with an idea to fire all handlers asynchronously (so outside current transaction) but that solves only one issue: we could register users when we cannot send emails. We need something better. Fortunately, we can fire our emails just after transaction commit. Thus, we are sure everything was fine during registration and without doubts we can send the welcoming message. Spring gives us possibility to do that in a few lines of code with <a href="http://docs.spring.io/spring/docs/3.0.6.RELEASE_to_3.1.0.BUILD-SNAPSHOT/3.0.6.RELEASE/org/springframework/transaction/support/TransactionSynchronizationManager.html"> TransactionSynchronizationManager</a>:
 </p>
 
 ```java
