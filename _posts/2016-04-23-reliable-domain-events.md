@@ -112,10 +112,9 @@ This clearly shows that those concepts should be unrelated. One may come with an
 Thanks to this code, we are fine with cause and effect relationship. Taking advantage of java memory model nomenclature: we know that successful registration <b>happens before</b> sending an email. One may argue that there is a slight window of time when we are not consistent. As stated at the beginning, we don't need to be consistent when working with several bounded context. The important is that they will be <b>eventually consistent</b>. Anyway, we still did not solve the problem with unresponsive mail server. When it fails, the information is lost. We can implement something which will retry this operation with a reasonable back-off, but when our application crashes, we still don't have any mean to recover to former state. We need to deal with that issue.
 </p>
 
-*** Event Store ***
 
 <p style="text-align:justify;">
-It gets clearer that we need to store somewhere the <b>intent</b> of sending the email. The intent was of course <i>UserRegistered</i> event. By exposing this intent to for example JMS infrastructure, we can implement the retry mechanism. We can go further and store any event coming from a given bounded context. Repository of all domain events is in fact called Event Store. Below example contain code that serializes events to JSON and publishes them to JMS. We could publish them anywhere else, for example to a file on a local disk or to an Akka actor. 
+It gets clearer that we need to store somewhere the <b>intent</b> of sending the email. The intent was of course <i>UserRegistered</i> event. By exposing this intent to for example JMS infrastructure, we can implement the retry mechanism. We can go further and store any event coming from a given bounded context. Repository of all domain events is in fact called <b>Event Store</b>. Below example contain code that serializes events to JSON and publishes them to JMS. We could publish them anywhere else, for example to a file on a local disk or to an Akka actor. 
 </p>
 
 ```java
@@ -135,11 +134,16 @@ class ExternalEventStore {
 ```
 
 <p style="text-align:justify;">
-We could call that component from our <i>handleNow</i> method from previous example and make some other component consume those messages and send emails. But that would be just delegating the problem from mail server to another part of infrastructure - our queue. Putting a message to a queue might fail and the message would be lost. Moreover, our application can fail somewhere in between commit and invoking this asynchronous transaction listener. We also cannot move this code back to the transaction, because that would make us stuck at the beginning of our problem and queue failures would result in our users not being able to register. 
-
-We have to develop a consistent solution in which an <b>occurrence of an event reflects that it really happened in our system</b>. Also <b>when it really happened, it should be followed by an event</b>. In other words, those two statements should be in bi-conditional logical connective.
-
-The problem is that our JMS component is not backed by the same data source as our domain model. One solution is to use global transaction and two-phase commits. The problem is that it might decrease performance significantly. Plus, not every part of our infrastructure must support that mechanism. More clever idea is to share the same data source for our messaging infrastructure and domain model (if those two parts support that, of course). The side effect here is that we need to share the same schema, which might not be the nicest solution. In my opinion the best solution is to translate our events to our domain model storage and save them in the same transaction. Later on, another pool of threads can process them and publish somewhere else. Now our event store would look as follows:
+We could invoke <i>ExternalEventStore</i> from our <i>handleNow</i> method from previous example and make some other component consume those messages and send emails. But that would be just delegating the problem from mail server to another part of infrastructure - our queue. Putting a message to a queue might fail and the message would be lost. Moreover, our application can fail somewhere in between commit and invoking this asynchronous transaction listener. We also cannot move this code back to the transaction, because that would make us stuck at the beginning of our problem and queue failures would result in our users not being able to register. 
+</p>
+<p style="text-align:justify;">
+We have to develop a consistent solution in which an <b>occurrence of an event reflects that it really happened in our system</b>. Also <b>when it really happens, it should be followed by an event</b>. In other words, those two statements should be in bi-conditional logical connective.
+</p>
+<p style="text-align:justify;">
+The problem is that our JMS component is not backed by the same data source as our domain model. One solution is to use global transaction and two-phase commits. The problem is that it might decrease performance significantly. Plus, not every part of our infrastructure must support that mechanism. More clever idea is to share the same data source for our messaging infrastructure and domain model (if those two parts support this kind of data soure). The side effect here is that we need to share the same schema, which might not be the nicest solution. 
+</p>
+<p style="text-align:justify;">
+In my opinion the best option is to translate our events to our domain model storage and save them in the same transaction. Later on, another pool of threads should process them and publish somewhere else. Now our event store would look as follows:
 </p>
 
 ```java
@@ -193,7 +197,7 @@ public class PersistentEvent {
 
 ```
 <p style="text-align:justify;">
-and it would be call in <i>DomainEventProcessor</i> in the same transaction (so we came back to synchronous observator pattern):
+and it would be invoked from <i>DomainEventProcessor</i> in the same transaction (so we came back to synchronous observator pattern):
 </p>
 
 ```java
@@ -216,9 +220,9 @@ and it would be call in <i>DomainEventProcessor</i> in the same transaction (so 
 ```
 
 <p style="text-align:justify;">
-Note that we left the register with handlers working under the same transaction. It is because we may need to listen to this event somewhere around the same bounded context. That way we won't modify another aggregates, so leaving this like that is fine.
-
-But we still want our events to appear in our JMS infrastructure. We can run a periodic job which scans list of our events and sends them to queue or topic:
+Note that we left the register with handlers working under the same transaction. It is fine, because we may need to listen to this event somewhere else in the same bounded context. That way we won't modify another aggregates.
+</p>
+But we still want our events to appear in our JMS infrastructure. We can run a periodic job which scans list of our events and sends them to a queue or a topic:
 </p>
 
 ```java
@@ -241,10 +245,10 @@ class PublishPendingEventsScheduler {
 ```
 
 <p style="text-align:justify;">
-We mark every event as sent, so that it won't be picked up in further processing. If our message infrastructure fails, we try again soon. We have implemented a  We might argue that this code suffers from the same problem as the whole example. Our database might be done at the time we want to save this event as sent. That is fair concern, because we already have put it to JMS. That means it can arrive at consumer side several times. It is important that consumer handles those events in idempotent way by for example storing PersistentEvent's uuid and doing de-duplication. Resending at producer side and idempotency at consumer side gives us <b>at most once delivery</b>
+We mark every event as sent, so that it won't be picked up in further invocation. If our message infrastructure fails, we try again soon. We might argue that this code suffers from the same problem as the whole example. Our database might fails at the time we want to save this event as sent. That is a fair concern, because we already have sent it to JMS. That means it can arrive at consumer side several times. It is important that consumer handles those events in an idempotent way - by for example storing PersistentEvent's uuid and doing de-duplication. Resending at producer side and idempotency at consumer side gives us <b>at most once delivery</b>
 </p>
 
-<p>In this post I tried to describe un reliable domain events mechanism by implementing simple event store. Actually, events stores have much more benefits: we can examine every historical result of commands invoked in our system, run some forecasting algorithms, do event sourcing (reconstructing an aggregate by looking at its events) in different bounded contexts</p>
+<p style="text-align:justify;">In this post I tried to describe reliable domain events mechanism by implementing simple event store. Actually, events stores have much more benefits: we can examine every historical result of commands invoked in our system, run some forecasting algorithms, do event sourcing (reconstructing an aggregate by composing events it has produced) in different bounded contexts</p>
 
 
 
