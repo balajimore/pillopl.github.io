@@ -109,12 +109,12 @@ This clearly shows that those concepts should be unrelated. One may come with an
 </p>
 
 <p style="text-align:justify;">
-Thanks to this code, we are fine with cause and effect relationship. Taking advantage of java memory model nomenclature: we know that successful registration <b>happens before</b> sending an email. One may argue that there is a slight window of time when we are not consistent. As stated at the beginning, we don't need to be consistent when working with several bounded context. The important is that they will be <b>eventually consistent</b>. Anyway, we still did not solve the problem with unresponsive mail server. When it fails, the information is lost. We can implement something which will retry this operation with a reasonable back-off, but when our application crashes, we still don't have any mean to recover to former state. We need to deal with that issue.
+This example could be simplified with Spring 4.2 and <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-event" @TransactionalEventListener</a>. Thanks to this code, we are fine with cause and effect relationship. Taking advantage of java memory model nomenclature: we know that successful registration <b>happens before</b> sending an email. One may argue that there is a slight window of time when we are not consistent. As stated at the beginning, we don't need to be consistent when working with several bounded context. The important is that they will be <b>eventually consistent</b>. Anyway, we still did not solve the problem with unresponsive mail server. When it fails, the information is lost. We can implement something which will retry this operation with a reasonable back-off, but when our application crashes, we still don't have any mean to recover to former state. We need to deal with that issue.
 </p>
 
 
 <p style="text-align:justify;">
-It gets clearer that we need to store somewhere the <b>intent</b> of sending the email. The intent was of course <i>UserRegistered</i> event. By exposing this intent to for example JMS infrastructure, we can implement the retry mechanism. We can go further and store any event coming from a given bounded context. Repository of all domain events is in fact called <b>Event Store</b>. Below example contain code that serializes events to JSON and publishes them to JMS. We could publish them anywhere else, for example to a file on a local disk or to an Akka actor. 
+It gets clearer that we need to store somewhere the <b>intent</b> of sending the email. The intent was of course <i>UserRegistered</i> event. By exposing this intent to for example JMS infrastructure, we can implement the retry mechanism. We can go further and store any event coming from a given bounded context. Repository of all domain events is in fact called <b>Event Store</b>. Below example contains code that serializes events to JSON and publishes them to JMS. We could publish them anywhere else, for example to a file on a local disk or to an Akka actor. 
 </p>
 
 ```java
@@ -209,7 +209,7 @@ and it would be invoked from <i>DomainEventProcessor</i> in the same transaction
     private final Register handlersRegistry;
     private final EventStore eventStore;
 
-    public static void publish(DomainEvent event) {
+    public void publish(DomainEvent event) {
         handlersRegistry
             .getHandlers(event.getClass())
             .forEach(handler -> handler.handle(event));
