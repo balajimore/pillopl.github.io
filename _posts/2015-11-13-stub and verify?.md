@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Stub & Verify?
+title: Stub and Verify?
 comments: true
-category: norss
+
 ---
 
 <p style="text-align:justify;">
