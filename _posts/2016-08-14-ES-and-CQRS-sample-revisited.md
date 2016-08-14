@@ -19,7 +19,6 @@ There are 4 sub packages:
   <li><b>readmodel</b> - listens to events published by mentioned ApplicationEventPublisher and mutates denormalized shop item model represented by <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/readmodel/ShopItemDto.java">ShopItemDto.</a></li>
 </ul>
 
-Package organization represents so called onion architecture, with domain in the middle of it.
 </p>
 
 
