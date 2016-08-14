@@ -24,7 +24,7 @@ There are 4 sub packages:
 
 ***Package: domain***
 <p style="text-align:justify;">
-Application simulates a shop with various items. Since it is only a sample and shopping domain is much more complicated, this probably won't be modeled like that in real software. Anyway, a shop item can be in 4 states: INITIALIZED, BOUGHT, PAID, PAYMENT_MISSING. Changing a state means emitting an event. Let's take a look at diagram of states. 
+Application simulates a shop with various items. Since it is only a sample and shopping domain is much more complicated, this probably won't be modeled like that in a real software. Anyway, a shop item can be in 4 states: INITIALIZED, BOUGHT, PAID, PAYMENT_MISSING. Changing a state means emitting an event. Let's take a look at state diagram.
 
 <img src="/images/states.png">
 
@@ -32,7 +32,7 @@ Application simulates a shop with various items. Since it is only a sample and s
 </p>
 
 <p style="text-align:justify;">
-The most important mind shift is how the shop item aggregate is modeled. <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/domain/shopitem/ShopItem.java">It is not a traditional entity, but a simple POJO</a>. Hence, no external dependencies are needed. Note that this ShopItem is immutable, which favors functional programming and gives a lot of benefits. Every business method returns new instance of Shop Item. 
+The most important mind shift is how the shop item aggregate is modeled. <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/domain/shopitem/ShopItem.java">It is not a traditional entity, but a simple POJO</a>. Hence, no external dependencies are needed. Note that this ShopItem is immutable, which favors functional programming and gives a lot of benefits. Every business method returns new instance of ShopItem. 
 </p>
 
 <p style="text-align:justify;">
@@ -78,7 +78,7 @@ Last, but not least, we want those operations to be idempotent. Idempotency in t
 ***Package: eventstore***
 
 <p style="text-align:justify;">
-Mentioned above</i>getUncommitedChanges()</i>method is crucial point for implementing store with events. Every time we try to save a new change, we call save in EventSourceShopItemRepository, which looks as follows:
+Mentioned above</i>getUncommitedChanges()</i>method is crucial point for implementing storage with events. Every time we try to save a new change, we call save in EventSourceShopItemRepository, which looks as follows:
 </p>
 
 ```java
@@ -90,7 +90,6 @@ Mentioned above</i>getUncommitedChanges()</i>method is crucial point for impleme
                         .stream()
                         .map(eventSerializer::serialize)
                         .collect(toList()));
-        pendingEvents.forEach(eventPublisher::publishEvent);
         return aggregate.markChangesAsCommitted();
     }
 ```
@@ -121,11 +120,11 @@ interface EventStore extends JpaRepository<EventStream, Long> {
 ```
 
 <p style="text-align:justify;">
-It just looks for <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/eventstore/EventStream.java">EventStream</a> connected with this aggregate UUID and adds new serialized events in a form of <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/eventstore/EventDescriptor.java">EventDescriptor</a> with event serialized to JSON. If there is no stream yet (means we try to store the very first item, new stream is created). Everything is implemented with help of spring data jpa repository. Concurrent changes done in EventStream (adding new EventDescriptors to it) is implemented with optimistic locking.
+It just looks for <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/eventstore/EventStream.java">EventStream</a> connected with this aggregate UUID and adds new serialized events in a form of <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/eventstore/EventDescriptor.java">EventDescriptor</a> with event serialized to JSON. If there is no stream yet (means we try to store the brand new item, new stream is created). Everything is implemented with help of spring data jpa repository. Concurrent changes done in EventStream (adding new EventDescriptors to it) can be done with optimistic locking.
 </p>
 
 <p style="text-align:justify;">
-Having EventStore implemented helped us to create <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/eventstore/EventSourcedShopItemRepository.java">EventSourcedShopItemRepository</a>. It delegates to event store and looks events connected with given aggregate and then applies them sequentially, creating an aggregate. State can be reconstructed to represent aggregate from any given time. This is visible in the following test scenario.
+Having EventStore implemented helped us to create <a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/eventstore/EventSourcedShopItemRepository.java">EventSourcedShopItemRepository</a>. It delegates to event store and looks for events connected with given aggregate. Next, it applies them sequentially, creating an aggregate instance. <b>State can be reconstructed to represent aggregate from any given time. This is visible in the following test case.</b>
 </p>
 
 ```java
@@ -150,7 +149,7 @@ Having EventStore implemented helped us to create <a href="https://github.com/pi
 ***Package: readmodel***
 
 <p style="text-align:justify;">
-<a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/readmodel/ReadModelOnDomainEventUpdater.java">Take a look how read model is updated.</a> Basically it uses directly jdbc calls to update denormalized database schema by sql calls. Read model update is triggered with help of <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/event/TransactionalEventListener.html">TransactionalEventListener</a>.   
+<a href="https://github.com/pilloPl/event-source-cqrs-sample/blob/master/src/main/java/io/pillopl/eventsource/readmodel/ReadModelOnDomainEventUpdater.java">Take a look how read model is updated.</a> Basically it uses jdbc and direct sql calls to update denormalized database schema. No fany ORM needed here. Read model update is triggered with help of <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/event/TransactionalEventListener.html">TransactionalEventListener</a>.   
 </p>
 
 ```java
@@ -180,7 +179,7 @@ There is one more interesting thing in readmodel package. Since it knows about a
 ***Conclusion***
 
 <p style="text-align:justify;">
-With usage of CQRS we have simple and performant read model, that we can query without complex joins. Our read model is decomposed from write model and does not pollute domain. That means that is just a projection of domain events and has no impact of how domain is implemented. 
+With usage of CQRS we have simple and performant read model, that we can query without complex joins. Our read model is decoupled from write model and does not pollute domain model. That means that it is just a projection of domain events and has no impact of how domain is implemented. 
 
-Having all the events stored in event store gives us huge debugging possibilities. We can reconstruct aggregate state at any moment. It gives us really simple database schema, throwing away all the work db admins need to do when storing complex domain in relational database. 
+Having all the events stored in event store gives us huge debugging possibilities. We can reconstruct aggregate state from any given moment. Storing only events results in having simple shema for write model (only 2 tables here), throwing away all the work that db admins need to do when storing complex domain in relational database. 
 </p>
