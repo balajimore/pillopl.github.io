@@ -14,8 +14,6 @@ In the next month (hopefully), I will be creating a series of blog posts about t
 </p>
 
 <p style="text-align:justify;">
-<iframe width="420" height="315"
-src="https://www.youtube.com/watch?v=rhn-T9b_Mvs">
-</iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rhn-T9b_Mvs" frameborder="0" allowfullscreen></iframe>
 </p>
 
