@@ -6,7 +6,7 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Last month I did a few talks about leveraging Spring Cloud Stream to create fault tolerant and loosely coupled services that use Event Sourcing and Command Query Responsibility Segregation. Unfortuneatly, none of those was recorded due to technical reasons. But, I also had a great pleasure to had a Google Hangout about those subjects with guys from the Spring team. They liked it up to the point to putting the video online, <a href="https://spring.io/blog/2016/11/08/cqrs-and-event-sourcing-with-jakub-pilimon">at their blog page</a>. So if you are ineterested and have fifty minutes, please leave a comment.
+Last month I did a few talks about leveraging Spring Cloud Stream to create fault tolerant and loosely coupled services that use Event Sourcing and Command Query Responsibility Segregation. Unfortuneatly, none of those was recorded due to technical reasons. But, I also had a great pleasure to had a Google Hangout about those subjects with guys from the Spring team. They liked it up to the point to putting the video online, <a href="https://spring.io/blog/2016/11/08/cqrs-and-event-sourcing-with-jakub-pilimon">at their blog page</a>. So if you are interested and have fifty minutes, please leave a comment.
 </p>
 
 <p style="text-align:justify;">
