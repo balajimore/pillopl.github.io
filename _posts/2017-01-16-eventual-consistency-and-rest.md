@@ -187,7 +187,9 @@ The last scenario ensures that after retrying client gets expected data. Of cour
         when:
             itemIsPaidAtVersion(itemUUID, ANY_TIME, 2)
         and:
-            ResultActions secondResult = mockMvc.perform(get("/${itemUUID}").header("Expect", 2))
+            ResultActions secondResult = mockMvc
+					.perform(get("/${itemUUID}")
+					.header("Expect", 2))
         then:
             secondResult.andExpect(status().isOk())
     }
@@ -213,7 +215,9 @@ The other option is to inform the user that we are only able to return data from
         then:
             result.andExpect(
 			header()
-				.string(LAST_MODIFIED, HTTP_DATE_FORMAT.format(from(ANY_TIME))))
+				.string(
+					LAST_MODIFIED, 
+					HTTP_DATE_FORMAT.format(from(ANY_TIME))))
             result.andExpect(status().isOk())
 
     }
