@@ -264,6 +264,6 @@ Sadly although both <a href="http://stackoverflow.com/questions/3764075/retry-af
 </p>
 
 <p style="text-align:justify;">
-Code can be found <a href="https://github.com/pilloPl/shop-ui">here</a>:
+Code can be found <a href="https://github.com/pilloPl/shop-ui">here</a>
 </p>
 
