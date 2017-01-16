@@ -75,7 +75,9 @@ Let's see how read model server can implement that logic. First we have to creat
 
 ```java
     @RequestMapping(method = RequestMethod.GET, value = "/{uuid}")
-    public ResponseEntity<ShopItem> readById(@PathVariable String uuid, @RequestHeader(value="Expect") Integer expectedVersion) {
+    public ResponseEntity<ShopItem> readById(
+			@PathVariable String uuid, 
+	                @RequestHeader(value="Expect") Integer expectedVersion) {
        //..
     }
 ```
@@ -140,7 +142,9 @@ Now let's take a look at the endpoint implementation. The client can leave expec
 
 ```java
     @RequestMapping(method = RequestMethod.GET, value = "/{uuid}")
-    public ResponseEntity<ShopItem> readById(@PathVariable String uuid, @RequestHeader(value=HttpHeaders.EXPECT) Integer expectedVersion) {
+    public ResponseEntity<ShopItem> readById(
+			@PathVariable String uuid, 
+			@RequestHeader(value=HttpHeaders.EXPECT) Integer expectedVersion) {
         final ShopItem item = jdbcReadModel.getItemBy(UUID.fromString(uuid));
         if (dataAtExpectedState(item, expectedVersion)) {
             return ResponseEntity.ok(item);
@@ -211,7 +215,9 @@ And we had to modify previous implementation, so that it returns new header:
 
 ```java
    @RequestMapping(method = RequestMethod.GET, value = "/{uuid}")
-    public ResponseEntity<ShopItem> readById(@PathVariable String uuid, @RequestHeader(value= EXPECT) Integer expectedVersion) {
+    public ResponseEntity<ShopItem> readById(
+			@PathVariable String uuid, 
+			@RequestHeader(value= EXPECT) Integer expectedVersion) {
         final ShopItem item = jdbcReadModel.getItemBy(UUID.fromString(uuid));
         if (dataAtExpectedState(item, expectedVersion)) {
             return okWithLastModifiedDate(item);
