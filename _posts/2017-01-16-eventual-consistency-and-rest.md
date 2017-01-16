@@ -101,7 +101,9 @@ To align more with HTTP, let's put expected version under EXPECT parameter inste
             UUID itemUUID = UUID.randomUUID()
             itemIsOrderedAtVersion(itemUUID, ANY_TIME, currentVersion)
         when:
-            ResultActions result = mockMvc.perform(get("/${itemUUID}").header(EXPECT, expectedVersion))
+            ResultActions result = mockMvc
+					.perform(get("/${itemUUID}")
+					.header(EXPECT, expectedVersion))
         then:
             result.andExpect(header().longValue("Retry-After", 2))
             result.andExpect(status().isServiceUnavailable())
@@ -124,7 +126,9 @@ The second scenario ensures that when expected version is smaller or equal to cu
             UUID itemUUID = UUID.randomUUID()
             itemIsOrderedAtVersion(itemUUID, ANY_TIME, currentVersion)
         when:
-            ResultActions result = mockMvc.perform(get("/${itemUUID}").header(EXPECT, expectedVersion))
+            ResultActions result = mockMvc
+					.perform(get("/${itemUUID}")
+					.header(EXPECT, expectedVersion))
         then:
             result.andExpect(status().isOk())
         where:
@@ -174,7 +178,9 @@ The last scenario ensures that after retrying client gets expected data. Of cour
             UUID itemUUID = UUID.randomUUID()
             itemIsOrderedAtVersion(itemUUID, ANY_TIME, 1)
         when:
-            ResultActions result = mockMvc.perform(get("/${itemUUID}").header("Expect", 2))
+            ResultActions result = mockMvc
+					.perform(get("/${itemUUID}")
+					.header("Expect", 2))
         then:
             result.andExpect(header().longValue("Retry-After", 2))
             result.andExpect(status().isServiceUnavailable())
@@ -201,9 +207,13 @@ The other option is to inform the user that we are only able to return data from
             UUID itemUUID = UUID.randomUUID()
             itemIsOrderedAtVersion(itemUUID, ANY_TIME, 1)
         when:
-            ResultActions result = mockMvc.perform(get("/${itemUUID}").header("Expect", 1))
+            ResultActions result = mockMvc
+					.perform(get("/${itemUUID}")
+					.header("Expect", 1))
         then:
-            result.andExpect(header().string(LAST_MODIFIED, HTTP_DATE_FORMAT.format(from(ANY_TIME))))
+            result.andExpect(
+			header()
+				.string(LAST_MODIFIED, HTTP_DATE_FORMAT.format(from(ANY_TIME))))
             result.andExpect(status().isOk())
 
     }
@@ -228,7 +238,9 @@ And we had to modify previous implementation, so that it returns new header:
 
     private ResponseEntity<ShopItem> okWithLastModifiedDate(ShopItem item) {
         final HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.LAST_MODIFIED, HTTP_DATE_FORMAT.format(item.getLastModifiedDate()));
+        headers.set(
+		HttpHeaders.LAST_MODIFIED, 
+		HTTP_DATE_FORMAT.format(item.getLastModifiedDate()));
         return new ResponseEntity<>(item, headers, HttpStatus.OK);
     }
 ```
