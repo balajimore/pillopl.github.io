@@ -18,7 +18,7 @@ Typically in event-sourced systems (with Command Query Responsibility Segregatio
 </p>
 
 <p style="text-align:justify;">
-This actually leads us to a situation where we have 3 well defined boundaries with well defined contracts. That means we can easily distribute work among 3 teams. Write model team need to have deep knowledge in the domain, but does not need to touch UI and database (!). Read model team need to perform simple database updates and provide an API for front-end. Front-end in turns must do as usual - request (to write model) and queries (to read model).
+This actually leads us to a situation where we have 3 well defined boundaries with well defined contracts. That means we can easily distribute work among 3 teams. Write model team need to have deep knowledge in the domain, but do not need to touch UI and database (!). Read model team need to perform simple database updates and provide an API for front-end. Front-end in turn must do as usual - request (to write model) and queries (to read model).
 </p>
 
 <p style="text-align:justify;">
