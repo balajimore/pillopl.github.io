@@ -64,7 +64,7 @@ Let's now go back to our three components: client, write model and read model. W
 <ul>
   <li>Issue a command to write model</li>
   <li>Read current version from ACK</li>
-  <li>Put expected version to request to write model</li>
+  <li>Put expected version to request to read model</li>
   <li>Expect data or expect browser to retry soon transparently (because of Retry-After header set by read model server)</li>
 </ul>
 </p>
