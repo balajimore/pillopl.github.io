@@ -6,7 +6,7 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-<a href=http://pillopl.github.io/event-sourcing-with-cqrs>Previously</a> I posted a short note about my sample event sourced application that follows Command Query Responsibility Segregation principle. Today I would like to go a little bit further and describe its particular components and their responsibilities. 
+<a href="http://pillopl.github.io/event-sourcing-with-cqrs">Previously</a> I posted a short note about my sample event sourced application that follows Command Query Responsibility Segregation principle. Today I would like to go a little bit further and describe its particular components and their responsibilities. 
 </p>
 
 ***Overall structure***
