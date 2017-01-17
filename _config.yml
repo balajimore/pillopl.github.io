@@ -80,3 +80,4 @@ exclude:
 
 
 theme: jekyll-theme-cayman
+highlighter: and change the value to rouge
