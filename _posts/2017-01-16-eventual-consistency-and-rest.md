@@ -5,7 +5,7 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Typically in event-sourced systems (with Command Query Responsibility Segregation) that need to display data to a client, we have free components that must co-operate
+Typically in event-sourced systems (with Command Query Responsibility Segregation) that need to display data to a client, we have three components that must co-operate
 <ul>
   <li>write model that accepts commands and writes events to its event store</li>
   <li>read model that accepts events and returns DTOs to a client</li>
