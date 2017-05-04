@@ -5,7 +5,9 @@ permalink: /about/
 ---
 
 Jakub Pilimon
-Java Developer @ 4FinanceIT  
+Java Developer/Consultant @ jPilo 
+Trainer @ Bottega.com.pl
+
 
 ### Contact me
 
