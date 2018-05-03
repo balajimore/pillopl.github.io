@@ -2,7 +2,6 @@
 layout: post
 title: How To Test Your Distributed Message-driven Application With Spring?
 comments: true
-
 ---
 
 <p style="text-align:justify;">
