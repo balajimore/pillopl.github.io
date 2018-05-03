@@ -5,7 +5,7 @@ permalink: /about/
 ---
 
 Jakub Pilimon
-Java Developer/Consultant @ jPilo 
+Principal Technologist @ Pivotal 
 Trainer @ Bottega.com.pl
 
 

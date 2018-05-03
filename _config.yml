@@ -14,7 +14,7 @@ avatar: https://pillopl.github.io/images/brian.jpg
 
 analytics :
   provider : google
-  google : 
+  google :
       tracking_id : 'UA-63049788-1'
 #
 # Flags below are optional
@@ -24,7 +24,6 @@ analytics :
 footer-links:
   dribbble:
   email: jakub.pilimon@gmail.com
-  facebook: jakub.pilimon
   flickr:
   github: pillopl
   instagram:
