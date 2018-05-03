@@ -224,7 +224,7 @@ The left one shows what was tested by the unit test. And the second one highligh
 </p>
 
 <p style="text-align:justify;">
-In both cases, the actual messaging was not tested. Moreover, the integration tests examines more components which are not that essential taking into account that DomainEventPublisher is still left untested. There must be a better way. Let’s take a deeper look at Spring Cloud Stream’s documentation. In a paragraph about testing (https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/_testing.html) we can find an interesting note:</p>
+In both cases, the actual messaging was not tested. Moreover, the integration tests examines more components which are not that essential taking into account that DomainEventPublisher is still left untested. There must be a better way. Let’s take a deeper look at Spring Cloud Stream’s documentation. <a href="https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/_testing.html">In a paragraph about a testing</a> we can find an interesting note:</p>
 
 <blockquote class="cite">
 <p>“... we are using the <b>MessageCollector</b> provided by Spring Cloud Stream’s test support to capture the message has been sent to the output channel as a result. Once we have received the message, we can validate that the component functions correctly.”</p>
