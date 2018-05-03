@@ -5,7 +5,7 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Messaging is cool. It allows to deal with a broad set of various problems that developers face on a daily basis. It is not a silver bullet though. One must carefully access if their architectural drivers fit this pattern. <b>Heuristics</b> that might help you speed up this decision are:
+Messaging is cool. It allows to deal with a broad set of various problems that developers face on a daily basis. It is not a silver bullet though. One must carefully access if their architectural drivers fit this pattern. <b>Heuristics</b> that might help you with this decision are:
 </p>
 
 <ul>
