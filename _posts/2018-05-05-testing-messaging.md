@@ -240,7 +240,7 @@ In both cases, the actual messaging was not tested. Moreover, the integration te
 So here it is! Testing support and in particular <i>MessageCollector</i> can help us test our code without a dependency to a real broker. Instead, the messages can be held in an internal in-memory blocking queue. Here goes the test:
 </p>
 
-```grovy
+```java
 @SpringBootTest
 class ApplyForCardWithEventMessageCollectorTest extends Specification {
 
@@ -258,17 +258,18 @@ class ApplyForCardWithEventMessageCollectorTest extends Specification {
     when:
         cardApplicationController.applyForCard(new CardApplication(20))
     then:
-        events.poll().getPayload().contains("card-granted")
+        events.poll().getHeaders().containsValue("card-granted")
     }
 
     def 'should  not be able to get card when born before 70s'() {
     when:
         cardApplicationController.applyForCard(new CardApplication(90))
     then:
-        events.poll().getPayload().contains("card-application-rejected")
+        events.poll().getHeaders().containsValue("card-application-rejected")
     }
 }
 ```
+
 <p style="text-align:justify;">
 This is what we test currently. Finally the whole producer’s side:
 </p>
@@ -315,7 +316,7 @@ Success. It finally worked. The producer and consumer can communicate without is
 ***Spring Cloud Contract***
 
 <p style="text-align:justify;">
-To automatically test the whole process we would have to bring up the consumer side as a dependency. Plus a message broker. We already have said that this is not the best idea since we want to run tests in isolation. They should not be dependent on a presence of another component. Fortunately, there is a tool called <a href="https://cloud.spring.io/spring-cloud-contract/">Spring Cloud Contract</a>. By the means of this framework, we are able to test if two (or more) microservices will communicate on a production environment without having to create a test that sets up all components that participate in the testes communication. Plus, it works with both messaging and REST APIs. Sounds like a perfect fit.
+To automatically test the whole process we would have to bring up the consumer side as a dependency. Plus a message broker. We already have said that this is not the best idea since we want to run tests in isolation. They should not be dependent on a presence of another component. Fortunately, there is a tool called <a href="https://cloud.spring.io/spring-cloud-contract/">Spring Cloud Contract</a>. By the means of this framework, we are able to test if two (or more) microservices will communicate on a production environment without having to create a test that sets up all components that participate in the tested communication. Plus, it works with both messaging and REST APIs. Sounds like a perfect fit.
 </p>
 
 <p style="text-align:justify;">
