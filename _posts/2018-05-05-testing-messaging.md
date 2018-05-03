@@ -14,7 +14,7 @@ Messaging is cool. It allows to deal with a broad set of various problems that d
 <li>Communication should be reliable - the message broker can store and forward messages. Thus, the producer does not need to care about retrying.</li>
 <li>We deal with <i>occasionally connected</i> devices. Those are component that tend to be offline or down but need to synchronize as soon as the reconnect. Disconnection cannot affects the producer. The need for two components to be alive at the same time is called <i>temporal coupling</i>.</li>
 <li>There is a need for multicast/broadcast.</li>
-<li>One of our components use event sourcing. You can learn about that concept listening to that <a href=”https://www.youtube.com/watch?v=WRUMjjqF1nc”>talk</a></li>
+<li>One of our components use event sourcing. You can learn about that concept listening to that <a href=''https://www.youtube.com/watch?v=WRUMjjqF1nc''>talk</a></li>
 <li>There is already a production setup of a message broker in your infrastructure.</li>
 </ul>
 
@@ -31,19 +31,19 @@ Let’s imagine an enterprise that issues credit cards under one condition - a p
 @RestController("/applications")
 class CreditCardApplicationController {
 
-private final ApplyForCardService applyForCardService;
+    private final ApplyForCardService applyForCardService;
 
-CreditCardApplicationController(ApplyForCardService applyForCardService) {
-this.applyForCardService = applyForCardService;
-}
+    CreditCardApplicationController(ApplyForCardService applyForCardService) {
+        this.applyForCardService = applyForCardService;
+    }
 
-@PostMapping
-ResponseEntity applyForCard(@RequestBody CardApplication cardApplication) {
-return applyForCardService
-.apply(cardApplication.getPesel())
-.map(card -> ok().build())
-.orElse(status(FORBIDDEN).build());
-}
+    @PostMapping
+    ResponseEntity applyForCard(@RequestBody CardApplication cardApplication) {
+        return applyForCardService
+            .apply(cardApplication.getPesel())
+            .map(card -> ok().build())
+            .orElse(status(FORBIDDEN).build());
+    }
 }
 ```
 
@@ -53,25 +53,21 @@ And an application service responsible for the decision:
 @Service
 class ApplyForCardService {
 
-private final CreditCardRepository creditCardRepository;
-private final DomainEventPublisher domainEventPublisher;
+    private final CreditCardRepository creditCardRepository;
 
-ApplyForCardService(CreditCardRepository creditCardRepository, DomainEventPublisher domainEventPublisher) {
-this.creditCardRepository = creditCardRepository;
-this.domainEventPublisher = domainEventPublisher;
-}
+    ApplyForCardService(CreditCardRepository creditCardRepository) {
+        this.creditCardRepository = creditCardRepository;
+    }
 
-@Transactional
-public Optional<CreditCard> apply(int age) {
-if (bornBeforeSeventies(age)) {
-domainEventPublisher.publish(new CardApplicationRejected(age));
-return Optional.empty();
-}
-CreditCard card = CreditCard.withDefaultLimit(age);
-creditCardRepository.save(card);
-domainEventPublisher.publish(new CardGranted(card.getCardNo(), card.getCardLimit(), age));
-return of(card);
-}
+    @Transactional
+    public Optional<CreditCard> apply(int age) {
+        if (bornBeforeSeventies(age)) {
+            return Optional.empty();
+        }
+        CreditCard card = CreditCard.withDefaultLimit(age);
+        creditCardRepository.save(card);
+        return of(card);
+    }
 }
 ```
 <p style="text-align:justify;">
@@ -80,13 +76,11 @@ Imagine a new business requirement. The system must react to a certain decision.
 
 ```java
 interface DomainEventPublisher {
-
-void publish(DomainEvent event);
+    void publish(DomainEvent event);
 }
-```
-```java
+
 interface DomainEvent {
-String getType();
+    String getType();
 }
 
 ```
@@ -101,17 +95,17 @@ Any production code that is not proved by test is just a rumour, so here goes an
 
 ```groovy
 def 'should emit CardGranted when client born in 70s or later'() {
-when:
-applyForCardService.apply("89121514667")
-then:
-1 * domainEventsPublisher.publish( { it instanceof CardGranted } )
+    when:
+        applyForCardService.apply("89121514667")
+    then:
+        1 * domainEventsPublisher.publish( { it instanceof CardGranted } )
 }
 
 def 'should emit CardApplicationRejected when client born before 70s'() {
-when:
-applyForCardService.apply("66121514667")
-then:
-1 * domainEventsPublisher.publish( { it instanceof CardApplicationRejected } )
+    when:
+        applyForCardService.apply("66121514667")
+    then:
+        1 * domainEventsPublisher.publish( { it instanceof CardApplicationRejected } )
 }
 ```
 
@@ -120,19 +114,19 @@ And in order for the test to pass:
 ```java
 @Transactional
 public Optional<CreditCard> apply(String pesel) {
-if (bornBeforeSeventies(pesel)) {
-domainEventsPublisher.publish(new CardApplicationRejected(pesel));
-return Optional.empty();
-}
-CreditCard card = CreditCard.withDefaultLimit(pesel);
-creditCardRepository.save(card);
-domainEventsPublisher.publish(new CardGranted(card.getCardNo(), card.getCardLimit(), pesel));
-return of(card);
+    if (bornBeforeSeventies(pesel)) {
+        domainEventsPublisher.publish(new CardApplicationRejected(pesel));
+        return Optional.empty();
+    }
+    CreditCard card = CreditCard.withDefaultLimit(pesel);
+    creditCardRepository.save(card);
+    domainEventsPublisher.publish(new CardGranted(card.getCardNo(), card.getCardLimit(), pesel));
+    return of(card);
 }
 ```
 
 <p style="text-align:justify;">
-Voilà. Let’s go to production. All the tests are green and that means we are good to go. But ... the application does not start on my local machine. There is no spring bean that implements the created interface. Although the unit test might be useful to drive a good design especially if you are a <a href=”https://martinfowler.com/articles/mocksArentStubs.html”>mockist TDD practitioner</a>, it is clearly not enough. Communicating with an external infrastructure from a business code is rather an integration task, isn’t it? So how about an integration test? But do we want to have a dependency on a message broker in our tests? Does it need to run in order to build the application? Or maybe should each of the developers have their own local instance of the broker? The answer to every of those questions is no. Tests should run in isolation. Let’s finally implement the interface and test the whole process by the means of an integration test. The messaging part can be implemented using a wonderful tool called <a href=”https://cloud.spring.io/spring-cloud-stream”> Spring Cloud Stream</a>(https://cloud.spring.io/spring-cloud-stream). In short, this is a framework that abstracts the the messaging paths with so-called <i>channels</i>. Channels are bound to a specific broker’s destinations by the means of classpath scanning (The tools looks for binders to Kafka or RabbitMQ). Let’s choose RabbitMQ. Our credit card application is a producer to one channel. That means it is a source for messages. Simillary, the consumer is a sink. In order not to communicate with a real broker in a test, we are going to replace the production implementation with <a href=”https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/test/mock/mockito/MockBean.html”>@MockBean</a>.
+Voilà. Let’s go to production. All the tests are green and that means we are good to go. But ... the application does not start on my local machine. There is no spring bean that implements the created interface. Although the unit test might be useful to drive a good design especially if you are a <a href=''https://martinfowler.com/articles/mocksArentStubs.html''>mockist TDD practitioner</a>, it is clearly not enough. Communicating with an external infrastructure from a business code is rather an integration task, isn’t it? So how about an integration test? But do we want to have a dependency on a message broker in our tests? Does it need to run in order to build the application? Or maybe should each of the developers have their own local instance of the broker? The answer to every of those questions is no. Tests should run in isolation. Let’s finally implement the interface and test the whole process by the means of an integration test. The messaging part can be implemented using a wonderful tool called <a href=''https://cloud.spring.io/spring-cloud-stream''> Spring Cloud Stream</a>(https://cloud.spring.io/spring-cloud-stream). In short, this is a framework that abstracts the the messaging paths with so-called <i>channels</i>. Channels are bound to a specific broker’s destinations by the means of classpath scanning (The tools looks for binders to Kafka or RabbitMQ). Let’s choose RabbitMQ. Our credit card application is a producer to one channel. That means it is a source for messages. Simillary, the consumer is a sink. In order not to communicate with a real broker in a test, we are going to replace the production implementation with <a href=''https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/test/mock/mockito/MockBean.html''>@MockBean</a>.
 
 The integration test (in jUnit, because it is easier to use MockBean in jUnit):
 
@@ -143,20 +137,20 @@ The integration test (in jUnit, because it is easier to use MockBean in jUnit):
 
 @Test
 public void shouldEmitCardGrantedEvent() {
-// when
-cardApplicationController.applyForCard(new CardApplication("70345678"));
+    // when
+    cardApplicationController.applyForCard(new CardApplication("70345678"));
 
-// then
-verify(domainEventsPublisher).publish(isA(CardGranted.class));
+    // then
+    verify(domainEventsPublisher).publish(isA(CardGranted.class));
 }
 
 @Test
 public void shouldEmitCardApplicationRejectedEvent() {
-// when
-cardApplicationController.applyForCard(new CardApplication("60345678"));
+    // when
+    cardApplicationController.applyForCard(new CardApplication("60345678"));
 
-// then
-verify(domainEventsPublisher).publish(isA(CardApplicationRejected.class));
+    // then
+    verify(domainEventsPublisher).publish(isA(CardApplicationRejected.class));
 }
 ```
 
@@ -165,18 +159,18 @@ The implementation:
 ```java
 class RabbitMqDomainEventPublisher implements DomainEventsPublisher {
 
-private final Source source;
+    private final Source source;
 
-RabbitMqDomainEventPublisher(Source source) {
-this.source = source;
-}
+    RabbitMqDomainEventPublisher(Source source) {
+        this.source = source;
+    }
 
-@Override
-public void publish(DomainEvent domainEvent) {
-Map<String, Object> headers = new HashMap<>();
-headers.put("type", domainEvent.getType());
-source.output().send(new GenericMessage<>(domainEvent, headers));
-}
+    @Override
+        public void publish(DomainEvent domainEvent) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("type", domainEvent.getType());
+        source.output().send(new GenericMessage<>(domainEvent, headers));
+    }
 }
 ```
 
@@ -185,18 +179,17 @@ And the listener at consumer’s side:
 ```java
 @Component
 class Listener {
-private static final Logger log = LoggerFactory.getLogger(Listener.class);
+    private static final Logger log = LoggerFactory.getLogger(Listener.class);
 
+    @StreamListener(target = Sink.INPUT, condition = "headers['type'] == 'card-granted'")
+        public void receiveGranted(@Payload CardGranted granted) {
+        log.info("\n\nGRANTED [" + granted.getClientPesel() + "] !!!! :) :) :)\n\n");
+    }
 
-@StreamListener(target = Sink.INPUT, condition = "headers['type'] == 'card-granted'")
-public void receiveGranted(@Payload CardGranted granted) {
-log.info("\n\nGRANTED [" + granted.getClientPesel() + "] !!!! :) :) :)\n\n");
-}
-
-@StreamListener(target = Sink.INPUT, condition = "headers['type'] == 'card-application-rejected'")
-public void receiveRejected(@Payload CardApplicationRejected rejected) {
-log.info("\n\nREJECTED [" + rejected.getClientPesel() + "] !!!! :( :( :(\n\n");
-}
+    @StreamListener(target = Sink.INPUT, condition = "headers['type'] == 'card-application-rejected'")
+        public void receiveRejected(@Payload CardApplicationRejected rejected) {
+        log.info("\n\nREJECTED [" + rejected.getClientPesel() + "] !!!! :( :( :(\n\n");
+    }
 }
 ```
 <p style="text-align:justify;">
@@ -251,30 +244,29 @@ So here it is! Testing support and in particular <i>MessageCollector</i> can hel
 @SpringBootTest
 class ApplyForCardWithEventMessageCollectorTest extends Specification {
 
-@Autowired CreditCardApplicationController cardApplicationController
-@Autowired Source source
-@Autowired MessageCollector messageCollector
+    @Autowired CreditCardApplicationController cardApplicationController
+    @Autowired Source source
+    @Autowired MessageCollector messageCollector
 
-BlockingQueue<GenericMessage<String>> events
+    BlockingQueue<GenericMessage<String>> events
 
+    def setup() {
+        events = messageCollector.forChannel(source.output())
+    }
 
-def setup() {
-events = messageCollector.forChannel(source.output())
-}
+    def 'should be able to get card when born in 70s or later'() {
+    when:
+        cardApplicationController.applyForCard(new CardApplication(20))
+    then:
+        events.poll().getPayload().contains("card-granted")
+    }
 
-def 'should be able to get card when born in 70s or later'() {
-when:
-cardApplicationController.applyForCard(new CardApplication(20))
-then:
-events.poll().getPayload().contains("card-granted")
-}
-
-def 'should  not be able to get card when born before 70s'() {
-when:
-cardApplicationController.applyForCard(new CardApplication(90))
-then:
-events.poll().getPayload().contains("card-application-rejected")
-}
+    def 'should  not be able to get card when born before 70s'() {
+    when:
+        cardApplicationController.applyForCard(new CardApplication(90))
+    then:
+        events.poll().getPayload().contains("card-application-rejected")
+    }
 }
 ```
 <p style="text-align:justify;">
@@ -297,16 +289,16 @@ It worked! Or did it? Wait a minute. The listener is able to get the message, bu
 ```java
 public class CardApplicationRejected implements DomainEvent {
 
-private final String clientPesel;
-private final Instant timestamp = Instant.now();
+    private final String clientPesel;
+    private final Instant timestamp = Instant.now();
 
-public CardApplicationRejected(String clientPesel) {
-this.clientPesel = clientPesel;
-}
+    public CardApplicationRejected(String clientPesel) {
+        this.clientPesel = clientPesel;
+    }
 
-@Override public String getType() {
-return "card-application-rejected";
-}
+    @Override public String getType() {
+        return "card-application-rejected";
+    }
 }
 ```
 
@@ -323,7 +315,7 @@ Success. It finally worked. The producer and consumer can communicate without is
 ***Spring Cloud Contract***
 
 <p style="text-align:justify;">
-To automatically test the whole process we would have to bring up the consumer side as a dependency. Plus a message broker. We already have said that this is not the best idea since we want to run tests in isolation. They should not be dependent on a presence of another component. Fortunately, there is a tool called <a href=”https://cloud.spring.io/spring-cloud-contract/”>Spring Cloud Contract</a>. By the means of this framework, we are able to test if two (or more) microservices will communicate on a production environment without having to create a test that sets up all components that participate in the testes communication. Plus, it works with both messaging and REST APIs. Sounds like a perfect fit.
+To automatically test the whole process we would have to bring up the consumer side as a dependency. Plus a message broker. We already have said that this is not the best idea since we want to run tests in isolation. They should not be dependent on a presence of another component. Fortunately, there is a tool called <a href=''https://cloud.spring.io/spring-cloud-contract/''>Spring Cloud Contract</a>. By the means of this framework, we are able to test if two (or more) microservices will communicate on a production environment without having to create a test that sets up all components that participate in the testes communication. Plus, it works with both messaging and REST APIs. Sounds like a perfect fit.
 </p>
 
 <p style="text-align:justify;">
@@ -333,20 +325,20 @@ The producer declares a contract. It basically says that if there is a rejection
 ```yaml
 label: card_rejected
 input:
-triggeredBy: sendRejected()
+  triggeredBy: sendRejected()
 outputMessage:
-sentTo: channel
-headers:
-type: card-application-rejected
-contentType: application/json
-body:
-clientPesel: 86010156812
-timestamp: 2018-01-01T12:12:12.000Z
-matchers:
-body:
-- path: $.timestamp
-type: by_regex
-predefined: iso_8601_with_offset
+  sentTo: channel
+  headers:
+    type: card-application-rejected
+    contentType: application/json
+  body:
+    clientPesel: 86010156812
+    timestamp: 2018-01-01T12:12:12.000Z
+  matchers:
+    body:
+    - path: $.timestamp
+      type: by_regex
+      predefined: iso_8601_with_offset
 ```
 
 <p style="text-align:justify;">
@@ -356,21 +348,21 @@ The contract is packaged as a maven artifact. Based on that contract, a test is 
 ```java
 @Test
 public void validate_shouldSendACardRejectedEvent() throws Exception {
-// when:
-sendRejected();
+    // when:
+    sendRejected();
 
-// then:
-ContractVerifierMessage response = contractVerifierMessaging.receive("channel");
-assertThat(response).isNotNull();
-assertThat(response.getHeader("type")).isNotNull();
-assertThat(response.getHeader("type").toString()).isEqualTo("card-application-rejected");
-assertThat(response.getHeader("contentType")).isNotNull();
-assertThat(response.getHeader("contentType").toString()).isEqualTo("application/json");
-// and:
-DocumentContext parsedJson = JsonPath.parse(contractVerifierObjectMapper.writeValueAsString(response.getPayload()));
-assertThatJson(parsedJson).field("['clientPesel']").isEqualTo(86010156812L);
-// and:
-assertThat(parsedJson.read("$.timestamp", String.class)).matches("([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.\\d{3})?(Z|[+-][01]\\d:[0-5]\\d)");
+    // then:
+    ContractVerifierMessage response = contractVerifierMessaging.receive("channel");
+    assertThat(response).isNotNull();
+    assertThat(response.getHeader("type")).isNotNull();
+    assertThat(response.getHeader("type").toString()).isEqualTo("card-application-rejected");
+    assertThat(response.getHeader("contentType")).isNotNull();
+    assertThat(response.getHeader("contentType").toString()).isEqualTo("application/json");
+    // and:
+    DocumentContext parsedJson = JsonPath.parse(contractVerifierObjectMapper.writeValueAsString(response.getPayload()));
+    assertThatJson(parsedJson).field("['clientPesel']").isEqualTo(86010156812L);
+    // and:
+    assertThat(parsedJson.read("$.timestamp", String.class)).matches("([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.\\d{3})?(Z|[+-][01]\\d:[0-5]\\d)");
 }
 ```
 
@@ -387,10 +379,11 @@ Have you noticed any problem with the code that grants/rejects credit cards and 
 ```java
 @Transactional
 public Optional<CreditCard> apply(String pesel) {
-// (...)
-creditCardRepository.save(card);
-domainEventsPublisher.publish(new CardGranted(card.getCardNo(), card.getCardLimit(), pesel));
-return of(card);
+    // (...)
+    creditCardRepository.save(card);
+    domainEventsPublisher
+        .publish(new CardGranted(card.getCardNo(), card.getCardLimit(), pesel));
+    return of(card);
 }
 ```
 <p style="text-align:justify;">
@@ -402,7 +395,7 @@ How to atomically save a newly created card to our database and send a message t
 </p>
 
 <p style="text-align:justify;">
-One can come up with an idea of reordering the steps. First, let’s make sure that the card was saved. Only then we are entitled to announce that via event. This scenario can be implemented using a callback registered with <a href=”https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html”TransactionSynchronizationManager</a>. But what if the broker is not online? Or our application was killed in between successful commit and callback execution? . The system will try to send that only once, it is crucial to understand that this is <i>at-most-once</i> guaranty. 
+One can come up with an idea of reordering the steps. First, let’s make sure that the card was saved. Only then we are entitled to announce that via event. This scenario can be implemented using a callback registered with <a href=''https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html''>TransactionSynchronizationManager</a>. But what if the broker is not online? Or our application was killed in between successful commit and callback execution? . The system will try to send that only once, it is crucial to understand that this is <i>at-most-once</i> guaranty. 
 </p>
 
 <p style="text-align:justify;">
@@ -412,39 +405,38 @@ What if we must send this message eventually? What if the requirement says that 
 @Component
 public class FromDBDomainEventPublisher implements DomainEventsPublisher {
 
-private final DomainEventStorage domainEventStorage;
-private final ObjectMapper objectMapper;
-private final Source source;
+    private final DomainEventStorage domainEventStorage;
+    private final ObjectMapper objectMapper;
+    private final Source source;
 
-public FromDBDomainEventPublisher(DomainEventStorage domainEventStorage,
-ObjectMapper objectMapper,
-Source source) {
-this.domainEventStorage = domainEventStorage;
-this.objectMapper = objectMapper;
-this.source = source;
-}
+    public FromDBDomainEventPublisher(DomainEventStorage domainEventStorage,
+    ObjectMapper objectMapper,
+    Source source) {
+        this.domainEventStorage = domainEventStorage;
+        this.objectMapper = objectMapper;
+        this.source = source;
+    }
 
-@Override
-public void publish(DomainEvent domainEvent) {
-try {
-domainEventStorage.save(new StoredDomainEvent(objectMapper.writeValueAsString(domainEvent)));
-} catch (JsonProcessingException e) {
-throw new RuntimeException(e);
-}
-}
+    @Override
+    public void publish(DomainEvent domainEvent) {
+        try {
+            domainEventStorage
+            .save(new StoredDomainEvent(objectMapper.writeValueAsString(domainEvent)));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-@Scheduled(fixedRate = 2000)
-@Transactional
-public void publishExternally() {
-domainEventStorage
-.findAllBySentOrderByTimestampDesc(false)
-.forEach(event -> {
-source.output().send(new GenericMessage<>(event.getContent()));
-event.sent();
-}
-
-);
-}
+    @Scheduled(fixedRate = 2000)
+    @Transactional
+    public void publishExternally() {
+        domainEventStorage
+        .findAllBySentOrderByTimestampDesc(false)
+        .forEach(event -> {
+                    source.output().send(new GenericMessage<>(event.getContent()));
+                    event.sent();
+                    });
+    }
 }
 
 ```
@@ -456,7 +448,7 @@ We quickly can notice that the method which periodically publishes new events su
 ***Store only one thing***
 
 <p style="text-align:justify;">
-Let’s think how we can omit the problem with having to coordinate state and messages with two different components - database and the message broker. Can we not send to one of them? Is state or message redundant?  Can one of them be derived from another? If we think of messages as events or as changes that affect state, then it becomes clear that state can be derived from events. Thus, only the communication with the broker would be needed. The state can be queried from a log of changes represented by events. This is what event sourcing is about. You can read more about reliable events delivery <a href=”http://pillopl.github.io/reliable-domain-events/”>here</a></p>
+Let’s think how we can omit the problem with having to coordinate state and messages with two different components - database and the message broker. Can we not send to one of them? Is state or message redundant?  Can one of them be derived from another? If we think of messages as events or as changes that affect state, then it becomes clear that state can be derived from events. Thus, only the communication with the broker would be needed. The state can be queried from a log of changes represented by events. This is what event sourcing is about. You can read more about reliable events delivery <a href=''http://pillopl.github.io/reliable-domain-events/''>here</a></p>
 <p style="text-align:justify;">
-The code used in this example is <a href=”https://github.com/spring-cloud-samples/messaging-application”>here</a></p>
+The code used in this example is <a href=''https://github.com/spring-cloud-samples/messaging-application''>here</a></p>
 
