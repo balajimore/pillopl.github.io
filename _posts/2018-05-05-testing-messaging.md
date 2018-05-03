@@ -217,13 +217,13 @@ So the tool added the bean to the application context even though its real imple
 The architectural diagram is worth more than a thousand words so let’s take a look at two of those. The first one shows what was tested by the unit test:
 </p>
 <p style="text-align:justify;">
-<img src="/images/unit-arch">
+<img src="/images/unit-arch.png" style="width: 50%; height: 50%"/>​>
 </p>
 <p style="text-align:justify;">
 And the second one highlights what was tested by the integration test: 
 </p>
 <p style="text-align:justify;">
-<img src="/images/integration-arch.png">
+<img src="/images/integration-arch.png" style="width: 50%; height: 50%"/>​>
 </p>
 
 <p style="text-align:justify;">
@@ -274,14 +274,14 @@ class ApplyForCardWithEventMessageCollectorTest extends Specification {
 This is what we test currently. Finally the whole producer’s side:
 </p>
 <p style="text-align:justify;">
-<img src="/images/collector-arch">
+<img src="/images/collector-arch.png" style="width: 50%; height: 50%"/>​>
 </p>
 
 <p style="text-align:justify;">
 Our application is starting locally! We can finally deploy to production. Just before doing so, let’s also start a consumer application and a docker image of RabbitMQ. Let’s trigger some messages and see them received at the consumer’s side:
 </p>
 <p style="text-align:justify;">
-<img src="/images/got-failure">
+<img src="/images/got-failure.png" style="width: 50%; height: 50%"/>​>
 </p>
 <p style="text-align:justify;">
 It worked! Or did it? Wait a minute. The listener is able to get the message, but its content is empty! Why there is null value? What could have gone wrong? The complete test was created. Plus, it examines exactly the same path as the production code, leveraging the beauty of MessageCollector. But here is one thing that we need to know about it: <i>MessageCollector</i> captures the message in an internal queue <b>before</b> actual serialization which happens in the production code while sending a message to a channel! That leads us to a point that there must be something wrong with our serialization. The channel is configured to talk in JSON, so probably we need to help Jackson a bit. Let’s have  a quick look at the classes that represents event:
@@ -307,7 +307,7 @@ public class CardApplicationRejected implements DomainEvent {
 A careful reader will quickly spot the problem. The getters are not there and jackson by default will not serialize any field without a getter. Let’s fix that and rerun:
 </p>
 <p style="text-align:justify;">
-<img src="/images/got-success">
+<img src="/images/got-success.png" style="width: 50%; height: 50%"/>​>
 </p>
 <p style="text-align:justify;">
 Success. It finally worked. The producer and consumer can communicate without issues. But does it mean there is no way of testing it without doing the manual check? Does it mean that each time we develop a message-driven system, we must set it up on a local machine and manually prove its correctness? Of course not.
