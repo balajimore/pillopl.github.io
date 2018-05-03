@@ -216,7 +216,7 @@ So the tool added the bean to the application context even though its real imple
 <p style="text-align:justify;">
 The architectural diagram is worth more than a thousand words so let’s take a look at two of those:
 </p>
-<img src="/images/archs.png" style="width: 50%; height: 50%" align="middle"/>​
+<img src="/images/archs.png" style="width: 50%; height: 50%; align: center"/>​
 <p style="text-align:justify;">
 The left one shows what was tested by the unit test. And the second one highlights what was tested by the integration test.
 </p>
@@ -297,7 +297,7 @@ public class CardApplicationRejected implements DomainEvent {
 <p style="text-align:justify;">
 A careful reader will quickly spot the problem. The getters are not there and jackson by default will not serialize any field without a getter. Let’s fix that and rerun:
 </p>
-<img src="/images/got-success.png" style="width: 100%; height: 100%"/>​>
+<img src="/images/got-success.png" style="width: 100%; height: 100%"/>​
 <p style="text-align:justify;">
 Success. It finally worked. The producer and consumer can communicate without issues. But does it mean there is no way of testing it without doing the manual check? Does it mean that each time we develop a message-driven system, we must set it up on a local machine and manually prove its correctness? Of course not.
 </p>
