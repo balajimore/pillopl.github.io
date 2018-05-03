@@ -280,7 +280,7 @@ Our application is starting locally! We can finally deploy to production. Just b
 <img src="/images/got-failure.png" style="width: 100%; height: 100%"/>​
 </p>
 <p style="text-align:justify;">
-It worked! Or did it? Wait a minute. The listener is able to get the message, but its content is empty! Why there is null value? What could have gone wrong? The complete test was created. Plus, it examines exactly the same path as the production code, leveraging the beauty of MessageCollector. But here is one thing that we need to know about it: <i>MessageCollector</i> captures the message in an internal queue <b>before</b> actual serialization which happens in the production code while sending a message to a channel! That leads us to a point that there must be something wrong with our serialization. The channel is configured to talk in JSON, so probably we need to help Jackson a bit. Let’s have  a quick look at the classes that represents event:
+It worked! Or did it? Wait a minute. The listener is able to get the message, but its content is empty! Why there is null value? What could have gone wrong? The complete test was created. Plus, it examines exactly the same path as the production code, leveraging the beauty of MessageCollector. But here is one thing that we need to know about it: <i>MessageCollector</i> captures the message in an internal queue <b>before</b> actual serialization which happens in the production code while sending a message to a channel! That leads us to a point that there must be something wrong with our serialization. The channel is configured to talk in JSON, so probably we need to help Jackson a bit. Let’s have  a quick look at the classes that represent events:
 </p>
 
 ```java
