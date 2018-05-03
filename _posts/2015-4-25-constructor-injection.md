@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Why injecting by constructor should be preffered?
+title: Why injecting by constructor should be preferred?
 comments: true
 ---
 <p style="text-align:justify;">
