@@ -217,7 +217,7 @@ So the tool added the bean to the application context even though its real imple
 The architectural diagram is worth more than a thousand words so let’s take a look at two of those:
 </p>
 <p style="text-align:justify;">
-<img src="/images/archs.png" style="width: 50%; height: 50%"/>​
+<img src="/images/archs.png" style="width: 50%; height: 50%" align="middle"/>​
 </p>
 <p style="text-align:justify;">
 The left one shows what was tested by the unit test. And the second one highlights what was tested by the integration test.
