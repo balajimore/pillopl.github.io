@@ -223,7 +223,7 @@ The architectural diagram is worth more than a thousand words so let’s take a 
 And the second one highlights what was tested by the integration test: 
 </p>
 <p style="text-align:justify;">
-<img src="/images/integration-arch">
+<img src="/images/integration-arch.png">
 </p>
 
 <p style="text-align:justify;">
