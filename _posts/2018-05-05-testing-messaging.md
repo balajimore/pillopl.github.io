@@ -216,7 +216,7 @@ So the tool added the bean to the application context even though its real imple
 <p style="text-align:justify;">
 The architectural diagram is worth more than a thousand words so let’s take a look at two of those:
 </p>
-<p style="text-align:justify;">
+<p>
 <img src="/images/archs.png" style="width: 50%; height: 50%" align="middle"/>​
 </p>
 <p style="text-align:justify;">
@@ -268,16 +268,16 @@ class ApplyForCardWithEventMessageCollectorTest extends Specification {
 ```
 
 <p style="text-align:justify;">
-This is what we test currently. Finally the whole producer’s side:
+This is what we test currently. We finally test the whole producer's side:
 </p>
-<p style="text-align:justify;">
-<img src="/images/collector-arch.png" style="width: 50%; height: 50%" align="middle"/>​
+<p>
+<img src="/images/collector-arch.png" style="width: 25%; height: 25%" align="middle"/>​
 </p>
 
 <p style="text-align:justify;">
 Our application is starting locally! We can finally deploy to production. Just before doing so, let’s also start a consumer application and a docker image of RabbitMQ. Let’s trigger some messages and see them received at the consumer’s side:
 </p>
-<p style="text-align:justify;">
+<p>
 <img src="/images/got-failure.png" style="width: 90%; height: 90%"/>​
 </p>
 <p style="text-align:justify;">
@@ -303,7 +303,7 @@ public class CardApplicationRejected implements DomainEvent {
 <p style="text-align:justify;">
 A careful reader will quickly spot the problem. The getters are not there and jackson by default will not serialize any field without a getter. Let’s fix that and rerun:
 </p>
-<p style="text-align:justify;">
+<p>
 <img src="/images/got-success.png" style="width: 90%; height: 90%"/>​>
 </p>
 <p style="text-align:justify;">
