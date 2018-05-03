@@ -300,7 +300,7 @@ public class CardApplicationRejected implements DomainEvent {
 ```
 
 <p style="text-align:justify;">
-A careful reader will quickly spot the problem. The getters are not there and jackson by default will not serialize any field without a getter. Let’s fix that and rerun:
+A careful reader will quickly spot the problem. The getters are not there and Jackson by default will not serialize any field without a getter. Let’s fix that and rerun:
 </p>
 <p style="text-align:center">
 <img src="/images/got-success.png" style="width: 100%; height: 100%"/>​
