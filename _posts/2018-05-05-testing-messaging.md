@@ -1,6 +1,6 @@
 ---
 layout: post
-title: How To Test Your Distributed Message-driven Application With Spring?
+title: How To Test Your Distributed Message-Driven Application With Spring?
 comments: true
 ---
 
