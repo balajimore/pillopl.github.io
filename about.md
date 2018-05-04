@@ -4,8 +4,8 @@ title: About
 permalink: /about/
 ---
 
-Jakub Pilimon
-Principal Technologist @ Pivotal 
+Jakub Pilimon <br>
+Principal Technologist @ Pivotal <br>
 Trainer @ Bottega.com.pl
 
 
