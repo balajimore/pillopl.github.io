@@ -5,7 +5,7 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Messaging is cool. It allows to deal with a broad set of various problems that developers face on a daily basis. It is not a silver bullet though. One must carefully access if their architectural drivers fit this pattern. A list of <b>heuristics</b> that might help you with this decision:
+Messaging is cool. It allows to deal with a broad set of various problems that developers face on a daily basis. It is not a silver bullet though. One must carefully assess if their architectural drivers fit this pattern. A list of <b>tips</b> that might help you with this decision:
 </p>
 
 <ul>
@@ -14,13 +14,13 @@ Messaging is cool. It allows to deal with a broad set of various problems that d
 <li>Communication should be reliable - message broker can store and forward messages. Thus, producer does not need to care about retrying.</li>
 <li>We deal with <i>occasionally connected</i> devices. Those are component that tend to be offline or down but need to synchronize as soon as the reconnect. Disconnection must not affect the producer. The need for two components to be alive at the same time is called <i>temporal coupling</i>.</li>
 <li>There is a need for multicast/broadcast.</li>
-<li>One of our components use <i>event sourcing</i>. You can learn about that concept listening to this <a href="https://www.youtube.com/watch?v=WRUMjjqF1nc">talk.</a></li>
+<li>One of our components uses <i>event sourcing</i>. You can learn about that concept listening to this <a href="https://www.youtube.com/watch?v=WRUMjjqF1nc">talk.</a></li>
 <li>There is already a production setup of a message broker in your infrastructure.</li>
 </ul>
 
 
 <p style="text-align:justify;">
-Note that those are mosty heuristics at distributed level. One can easly thing about benefits of having messaging in monoliths architectures too. Like <i>Inversion of Control</i> - sending messages to other parts of the application in order to continue the business flow (spring-events are a perfect fit for that use-case). Another one is programming model like concurrency control implemented in actor model with its queue of messages processed one at a time. In this article we are going to tackle how to test message-driven systems used in order to implement transport mechanism in distributed syastems (first five heuristics) and event sourcing.
+Note that those are mosty tips at distributed level. One can easly thing about benefits of having messaging in monoliths architectures too. Like <i>Inversion of Control</i> - sending messages to other parts of the application in order to continue the business flow (spring-events are a perfect fit for that use-case). Another one is programming model like concurrency control implemented in actor model with its queue of messages processed one at a time. In this article we are going to tackle how to test message-driven systems used in order to implement transport mechanism in distributed syastems (first five heuristics) and event sourcing.
 </p>
 
 <p style="text-align:justify;">
