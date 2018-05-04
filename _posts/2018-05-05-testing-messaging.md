@@ -454,7 +454,7 @@ Notice that the method which periodically publishes new events suffers from the 
 ***Store only one thing***
 
 <p style="text-align:justify;">
-Let’s think how we can omit the problem with having to coordinate state and messages with two different components - database and the message broker. Can we not send to one of them? Is state or message redundant?  Can one of them be derived from another? If we think of messages as events or as changes that affect state, then it becomes clear that state can be derived from events. Thus, only the communication with the broker would be needed. The state can be queried from a log of changes represented by events. This is what event sourcing is about. You can read more about reliable events delivery <a href="http://pillopl.github.io/reliable-domain-events/">here</a></p>
+Let’s think how we can omit the problem with having to coordinate state and messages with two different components - database and the message broker. Can we not send to one of them? Is state or message redundant?  Can one of them be derived from another? If we think of messages as events or as changes that affect state, then it becomes clear that state can be derived from events. Thus, only the communication with the broker would be needed. The state can be queried from a log of changes represented by events. This is what event sourcing is about. You can read more about reliable events delivery <a href="http://pillopl.github.io/reliable-domain-events/">here</a>.</p>
 <p style="text-align:justify;">
-The code used in this example is <a href="https://github.com/spring-cloud-samples/messaging-application">here</a></p>
+The code used in this example is <a href="https://github.com/spring-cloud-samples/messaging-application">here</a>.</p>
 
