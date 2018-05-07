@@ -5,7 +5,7 @@ comments: true
 ---
 
 <p style="text-align:justify;">
-Messaging is cool. It allows to deal with a broad set of various problems that developers face on a daily basis. It is not a silver bullet though. One must carefully assess if their architectural drivers fit this pattern. A list of <b>tips</b> that might help you with this decision:
+Messaging is cool. It allows to deal with a broad set of various problems that developers face on a daily basis. It is not a silver bullet though. One must assess if their architectural drivers fit this pattern. A list of <b>tips</b> that might help you with this decision:
 </p>
 
 <ul>
@@ -20,7 +20,7 @@ Messaging is cool. It allows to deal with a broad set of various problems that d
 
 
 <p style="text-align:justify;">
-Note that those are mosty tips at distributed level. One can easly thing about benefits of having messaging in monoliths architectures too. Like <i>Inversion of Control</i> - sending messages to other parts of the application in order to continue the business flow (spring-events are a perfect fit for that use-case). Another one is programming model like concurrency control implemented in actor model with its queue of messages processed one at a time. In this article we are going to tackle how to test message-driven systems used in order to implement transport mechanism in distributed syastems (first five heuristics) and event sourcing.
+Note that those are mosty tips at distributed level. One can think about benefits of having messaging in monoliths architectures too. Like <i>Inversion of Control</i> - a way to continue a business process in a different part of same application. Or concurrency control implemented in actor model. An actor has its internal queue of messages processed one at a time. In this article we will read about testing message-driven systems in distributed syastems. Systems which use messaging as transport mechanism (first five tips) and event sourcing.
 </p>
 
 <p style="text-align:justify;">
@@ -71,10 +71,10 @@ class ApplyForCardService {
 }
 ```
 <p style="text-align:justify;">
-Imagine a new business requirement. System must react to a certain decision. If a card is granted, system must deal with that fact in a particular manner. If a card application is rejected, it must do something else. Whatever it is. It might be an email, an update in a reporting tool or anything else. The important is that this process continues in a different application in the distributed environment. Plus, that second application can be temporary offline and this should not affect the granting/rejecting process. Did I mention that there is a huge probability of more applications being interested in the final result of the process? 
+Imagine a new business need. System must react to a certain decision. If a card is granted, system must deal with that fact in a particular manner. If a card application is rejected, it must do something else. Whatever it is. It might be an email, an update in a reporting tool or anything else. But this process continues in a different application in the distributed environment. Plus this application can be temporary offline. Of course, it should not affect the granting/rejecting process. Did I mention that there is a huge probability that more applications would like to know final result of the process? 
 </p>
 <p style="text-align:justify;">
-By now, it should be clear that messaging might be a good fit for this problem. Instead of adding a bunch of new lines to our application service, let’s just add one describing what has just happened - a message saying that either the card was granted or the application was rejected. Nothing more. A special kind of a message that represent a fact in a past is called an <i>event</i>. We need a component that will be responsible for publishing those events. Its responsibility is clear, but let’s postpone the implementation. Additionally, there might be several ones, so let’s just define an interface for the time being:
+By now, it should be clear that messaging might be a good fit for this problem. We will add one line of coded escribing what has happened. A message saying that either the card was granted or the application was rejected. Nothing more. A special kind of a message that represent a fact in a past is called an <i>event</i>. We need a component that will be responsible for publishing those events. Its responsibility is clear, but let’s postpone the implementation. Additionally, there might be several ones, so let’s add an interface for the time being:
 </p>
 
 ```java
@@ -89,8 +89,7 @@ interface DomainEvent {
 ```
 
 <p style="text-align:justify;">
-The marker interface for the event contains just an information about the event’s type - this might be handy in order to properly distribute or subscribe to specific messages. 
-</p>
+<i>DomainEvent</i> interface contains only an information about the event’s type. This might be handy while distributing or subscribing to specific messages. </p>
 
 ***After you, dear test***
 
@@ -129,10 +128,10 @@ public Optional<CreditCard> apply(String pesel) {
 ```
 
 <p style="text-align:justify;">
-Voilà. Let’s go to production. All tests are green and that means we are good to go. But ... the application does not start on my local machine. There is no spring bean that implements the DomainEventPublisher interface. Although the unit test might be useful to drive a good design, especially if you are a <a href="https://martinfowler.com/articles/mocksArentStubs.html">mockist TDD practitioner</a>, it is clearly not enough. Communicating with an external infrastructure from a business code is rather an integration task, isn’t it? So how about an integration test? But do we want to have a dependency on a message broker in our tests? Does it need to run in order to build the application? Or maybe should each of the developers have their own local instance of the broker? The answer to every of those questions is no. Tests should run in isolation. Let’s finally implement the interface and test the whole process with an integration test. 
+Voilà. Let’s go to production. All tests are green and that means we are good to go. But ... the application does not start on my local machine. There is no spring bean that implements the DomainEventPublisher interface. The unit test might be useful to drive a good design. Especially if you are a <a href="https://martinfowler.com/articles/mocksArentStubs.html">mockist TDD practitioner</a>. But it is clearly not enough. Communicating with an external infrastructure from a business code is rather an integration task, isn’t it? So how about an integration test? But do we want to have a dependency on a message broker in our tests? Does it need to run to build the application? Or should each of the developers have their own local instance of the broker? The answer to every of those questions is no. Tests should run in isolation. Let’s finally implement the interface. And let's test the whole process with an integration test. 
 </p>
 <p style="text-align:justify;">
-The messaging part can be implemented using a wonderful tool called <a href="https://cloud.spring.io/spring-cloud-stream">Spring Cloud Stream</a>. In short, this is a framework that abstracts messaging paths with so-called <i>channels</i>. Channels are bound to a specific broker’s destinations by classpath scanning (The tools looks for binders to Kafka or RabbitMQ). Let’s choose RabbitMQ. Our credit card application is a producer to one channel. That means it is a <i>source</i> for messages. Simillary, the consumer is a <i>sink</i>. In order not to communicate with a real broker in a test, we are going to replace the production implementation with <a href="https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/test/mock/mockito/MockBean.html">@MockBean</a>.
+We can use a wonderful tool - <a href="https://cloud.spring.io/spring-cloud-stream">Spring Cloud Stream</a> - to implement the messaging part. In short, this is a framework that abstracts messaging paths with so-called channels. Channels are bound to a specific broker’s destinations by classpath scanning. The tools looks for binders to Kafka or RabbitMQ. Let’s choose RabbitMQ. Our credit card application is a producer to one channel. That means it is a source for messages. Simillary, the consumer is a sink. We need to remove the dependency to a real broker in tests. To do so, we are going to replace the production implementation with <a href="https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/test/mock/mockito/MockBean.html">@MockBean</a>.
 </p>
 The integration test (in jUnit, because it is easier to use @MockBean in jUnit):
 
@@ -202,7 +201,7 @@ class Listener {
 Note the use of headers - this allows us to distribute messages to specific methods at the consumer’s side. 
 </p>
 <p style="text-align:justify;">
-This time we are definitely good to deploy to production. We have both unit and integration tests. Let’s run the application locally for the last time. ...and it failed for the same reason. No bean that implements the DomainEventPublisher interface. We forgot to register the implementation as a spring bean. But wait a minute, how come the integration test passes? Take a closer look at the @MockBean docs:
+This time we are definitely good to deploy to production. We have both unit and integration tests. Let’s run the application on our local machine for the last time. ...and it failed for the same reason. No bean that implements the DomainEventPublisher interface. We forgot to register the implementation as a spring bean. But wait a minute, how come the integration test passes? Take a closer look at the @MockBean docs:
 </p>
 <blockquote class="cite">
 <p>“Mocks can be registered by type or by bean name. Any existing single bean of the same type defined in the context will be replaced by the mock. <b>If no existing bean is defined a new one will be added.</b> “ </p>
@@ -211,8 +210,7 @@ This time we are definitely good to deploy to production. We have both unit and 
 ***Unit test vs Integration test***
 
 <p style="text-align:justify;">
-So the tool added the bean to the application context even though its real implementation was not there. And this is by design. We should have been more careful. Let's notice some facts about our new integration test:
-</p>
+So the tool added the bean to the application context. Even though its real implementation was not there. And this is by design. We should have been more careful. Let's notice some facts about our new integration test:</p>
 <ul>
 <li>It setups the whole context.</li>
 <li>It is significantly longer than the unit test.</li>
@@ -233,7 +231,7 @@ The left one shows what was tested by the unit test. Everything else is blurred.
 </p>
 
 <p style="text-align:justify;">
-In both cases, the actual messaging (DomainEventPublisher) was not tested. Moreover, the integration test examines more components which are not that essential taking into account that DomainEventPublisher is still left untested. There must be a better way. Let’s take a deeper look at Spring Cloud Stream’s documentation. <a href="https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/_testing.html">In a paragraph about testing</a> we can find an interesting note:</p>
+In both cases, the actual messaging (DomainEventPublisher) was not tested. Moreover, the integration test examines more not that essential components. Not essential, taking into account that DomainEventPublisher is still left untested. There must be a better way. Let’s take a deeper look at Spring Cloud Stream’s documentation. <a href="https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/_testing.html">In a paragraph about testing</a> we can find an interesting note:</p>
 
 <blockquote class="cite">
 <p>“... we are using the <b>MessageCollector</b> provided by Spring Cloud Stream’s test support to capture the message has been sent to the output channel as a result. Once we have received the message, we can validate that the component functions correctly.”</p>
@@ -243,7 +241,7 @@ In both cases, the actual messaging (DomainEventPublisher) was not tested. Moreo
 ***Spring Cloud Stream Testing Support***
 
 <p style="text-align:justify;">
-So here it is! Testing support and in particular <i>MessageCollector</i> can help us test our code without a dependency to a real broker. Instead, the messages can be held in an internal in-memory blocking queue. Here goes the test:
+So here it is! Testing support and in particular <i>MessageCollector</i> can help us test our code. Without a dependency to a real broker. Instead, the messages can be held in an internal in-memory blocking queue. Here goes the test:
 </p>
 
 ```java
@@ -283,13 +281,13 @@ That means we can finally use the same bean as in production code. We finally te
 <img src="/images/collector-arch.png" style="width: 25%; height: 25%" align="middle"/>​
 </p>
 <p style="text-align:justify;">
-Our application is starting locally! We can finally deploy to production. Just before doing so, let’s also start a consumer application and a docker image of RabbitMQ. Let’s trigger some messages and see them received at the consumer’s side:
+Our application is starting on our local machine! We can finally deploy to production. Just before doing so, let’s also start a consumer application and a docker image of RabbitMQ. Let’s trigger some messages and see them received at the consumer’s side:
 </p>
 <p style="text-align:center">
 <img src="/images/got-failure.png" style="width: 100%; height: 100%"/>​
 </p>
 <p style="text-align:justify;">
-It worked! Or did it? Wait a minute. The listener is able to get the message, but its content is empty! Why there is null value? What could have gone wrong? The complete test was created. Plus, it examines exactly the same path as the production code, leveraging the beauty of MessageCollector. But here is one thing that we need to know about it: <i>MessageCollector</i> captures the message in an internal queue <b>before</b> actual serialization which happens in the production code while sending a message to a channel! That leads us to a point that there must be something wrong with our serialization. The channel is configured to talk in JSON, so probably we need to help Jackson a bit. Let’s have  a quick look at the classes that represent events:
+It worked! Or did it? Wait a minute. The listener is able to get the message, but its content is empty! Why there is null value? What could have gone wrong? The complete test was created. Plus, it examines exactly the same path as the production code. But there is one thing that we need to know about it. <i>MessageCollector</i> captures the message in an internal queue <b>before</b> actual serialization. This serialization happens in the production code. It happens while sending a message to a channel! That leads us to a point that there must be something wrong with our serialization. The channel is configured to talk in JSON, so probably we need to help Jackson a bit. Let’s have  a quick look at the classes that represent events:
 </p>
 
 ```java
@@ -315,17 +313,17 @@ A careful reader will quickly spot the problem. The getters are not there and Ja
 <img src="/images/got-success.png" style="width: 100%; height: 100%"/>​
 </p>
 <p style="text-align:justify;">
-Success. It finally worked. The producer and consumer can communicate without issues. But does it mean there is no way of testing it without doing the manual check? Does it mean that each time we develop a message-driven system, we must set it up on a local machine and manually prove its correctness? Of course not.
+Success. It finally worked. The producer and consumer can communicate without issues. But does it mean there is no way of testing it without doing the manual check? Does it mean that each time we develop a message-driven system, we must set it up on a local machine? And manually prove its correctness? Of course not.
 </p>
 
 ***Spring Cloud Contract***
 
 <p style="text-align:justify;">
-To automatically test the whole process we would have to bring up the consumer side as a dependency. Plus a message broker. We have already said that this is not the best idea since we want to run tests in isolation. They should not be dependent on a presence of another component. Fortunately, there is a tool called <a href="https://cloud.spring.io/spring-cloud-contract/">Spring Cloud Contract</a>. By the means of this framework, we are able to test if two (or more) microservices will communicate on a production environment without having to create a test that sets up all components which participate in the communication. Plus, it works with both messaging and REST APIs. Sounds like a perfect fit.
+To automatically test the whole process we would have to bring up the consumer side as a dependency. Plus a message broker. We have already said that this is not the best idea since we want to run tests in isolation. They should not be dependent on a presence of another component. Fortunately, there is a tool called <a href="https://cloud.spring.io/spring-cloud-contract/">Spring Cloud Contract</a>. With this framework we can check if microservices will communicate on production environment. And all that without having to create a test that brings all of them up. Plus, it works with both messaging and REST APIs. Sounds like a perfect fit.
 </p>
 
 <p style="text-align:justify;">
-The producer declares a contract. It basically says that if there is a rejection of a card application, some message should be sent to a specific channel. The contract defines the body of that message:
+The producer declares a contract. It says that if there is a rejection of a card application, some message should be sent to a specific channel. The contract defines the body of that message:
 </p>
 
 ```yaml
@@ -373,13 +371,13 @@ public void validate_shouldSendACardRejectedEvent() throws Exception {
 ```
 
 <p style="text-align:justify;">
-Note that the test examines the message body. So in our previous example, it would have spotted the problem with the lack of any getter. Plus, this test is fired each time we would build the producer application. That means: each version of a producer comes with a corresponding version of stubs defined in a contract. How cool is that?
+Note that the test examines the message body. So in our previous example, it would have spotted the problem with the lack of any getter. Plus, this test is fired each time we would build the producer application. Each version of a producer comes with a corresponding version of stubs defined in a contract. How cool is that?
 </p>
 
 ***Transaction semantics***
 
 <p style="text-align:justify;">
-Have you noticed any problem with the code that grants/rejects credit cards and sends a corresponding event? Let’s have a second look:
+Have you noticed any problem with the code that grants/rejects credit cards? Something about events, maybe? Let’s have a second look:
 </p>
 
 ```java
@@ -393,19 +391,19 @@ public Optional<CreditCard> apply(String pesel) {
 }
 ```
 <p style="text-align:justify;">
-How to atomically save a newly created card to our database and send a message to our message broker? Remember that actual commit to the database takes place after returning from the body of this method and is being done by a proxy. <i>Two-phase-commit</i> is not an option because we don’t want to downgrade the performance. Let’s examine following scenarios:
+How to atomically save a newly created card to our database and send a message to our message broker? Remember that actual commit to the database takes place after returning from the body of this method. The proxy does that. <i>Two-phase-commit</i> is not an option because we don’t want to downgrade the performance. Let’s examine following scenarios:
 <ul>
-<li>Sending to the broker failed. Database transaction is rollbacked and everything is fine (neither credit card nor message was saved).</li>
-<li>Sending to the broker was successful. Spring proxy tries to commit and database is down (a message was sent while the card was not saved).</li>
+<li>Sending to the broker failed. Database transaction rollbacks and everything is fine. Neither credit card nor message was saved.</li>
+<li>Sending to the broker was successful. Spring proxy tries to commit and database is down. The message was sent while the card was not saved.</li>
 </ul>
 </p>
 
 <p style="text-align:justify;">
-One can come up with an idea of reordering the steps. First, let’s make sure that the card was saved. Only then we are entitled to announce that via event. This scenario can be implemented using a callback registered with <a href="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html">TransactionSynchronizationManager</a>. But what if the broker is not online? Or our application was killed in between successful commit and callback execution? . The system will try to send that only once, it is crucial to understand that this is <i>at-most-once</i> guaranty. 
+One can come up with an idea of reordering the steps. First, let’s make sure that the card was saved. Only then we are entitled to announce that via event. This scenario can be implemented using a callback registered with <a href="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html">TransactionSynchronizationManager</a>. But what if the broker is not online? Or our application was killed between successful commit and callback execution? . The system will try to send that only once, it is crucial to understand that this is <i>at-most-once</i> guaranty. 
 </p>
 
 <p style="text-align:justify;">
-What if we must send this message eventually? What if the requirement says that it must appear if a card was successfully saved? We can take advantage of the fact that most probably there is an ACID database in our toolbox. Let’s store both in one storage, using one transaction! A separate thread can take a look at all events saved in that storage, fetch ones not yet sent to the broker, send them and mark as sent. All in a couple of lines in new implementation of DomainEventPublisher:</p>
+What if we must send this message eventually? What if the requirement says that it must appear if a card was successfully saved? We can take advantage of the fact that most probably there is an ACID database in our toolbox. Let’s store both in one storage, using one transaction! A separate thread can take a look at all events saved in that storage and fetch ones not yet sent to the broker. Then send them and mark as sent. All in a couple of lines in new implementation of DomainEventPublisher:</p>
 
 ```java
 @Component
@@ -448,13 +446,13 @@ public class FromDBDomainEventPublisher implements DomainEventsPublisher {
 ```
 
 <p style="text-align:justify;">
-Notice that the method which periodically publishes new events suffers from the same problem of lack of an atomic transaction. It tries to connect to the broker and to save state. But this time it is <b>after</b> successful card creation. And it has retries. If the broker is down, we will retry. If after successful communication with the broker, the database is down, we will not mark the event as processed and resend it, implementing what is called <i>at-least-once guaranty</i>. Whether you should go with at-least-once or at-most-once depends on the business problem. For marketing purposes probably at-most-once is fine. On the other hand, if a message carries a significant information (like how to activate the card), then probably the clients would not mind getting this information more than once. At least they will be less angry than when not receiving it at all. And if your consumer is idempotent, then there is no problem at all.
+Notice that the method which periodically publishes new events suffers from the same problem of lack of an atomic transaction. It tries to connect to the broker and to save state. But this time it is <b>after</b> successful card creation. And it has retries. If the broker is down, we will retry. After successful communication with the broker, the database can be offline. Hence, we will not mark the event as processed. We will resend it, implementing what is called <i>at-least-once guaranty</i>. Whether you should go with at-least-once or at-most-once depends on the business problem. For marketing purposes probably at-most-once is fine. But if a message carries a significant information (like how to activate the card), then probably the clients want that message. And will not mind getting it twice. At least they will be less angry than when not receiving it at all. And if your consumer is idempotent, then there is no problem at all.
 </p>
 
 ***Store only one thing***
 
 <p style="text-align:justify;">
-Let’s think how we can omit the problem with having to coordinate state and messages with two different components - database and the message broker. Can we not send to one of them? Is state or message redundant?  Can one of them be derived from another? If we think of messages as events or as changes that affect state, then it becomes clear that state can be derived from events. Thus, only the communication with the broker would be needed. The state can be queried from a log of changes represented by events. This is what event sourcing is about. You can read more about reliable events delivery <a href="http://pillopl.github.io/reliable-domain-events/">here</a>.</p>
+How we can deal with cooridnation of two different components? With database and with message broker? Can we not send to one of them? Is state or message redundant? Can one of them be derived from another? If we think of messages as events or as changes that affect state, then it becomes clear that state can be derived from events. Thus, only the communication with the broker would be needed. The state can be queried from a log of changes represented by events. This is what event sourcing is about. You can read more about reliable events delivery  <a href="http://pillopl.github.io/reliable-domain-events/">here</a>.</p>
 <p style="text-align:justify;">
 The code used in this example is <a href="https://github.com/spring-cloud-samples/messaging-application">here</a>.</p>
 
