@@ -1,6 +1,6 @@
---
+---
 layout: post
-title: How CQRS Works with Spring Tools
+title: CQRS with Spring
 comments: true
 ---
 
